@@ -1,0 +1,1 @@
+Dynamic Array: all the arrays are created using malloc()

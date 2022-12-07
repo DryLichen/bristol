@@ -1,0 +1,29 @@
+\nsection{Packed Boolean Arrays}
+
+In C99, every individual variable must have a different address. For
+this reason, a \verb^bool^ must take up a least one byte since this is
+the smallest individual element uniquely addressable by most hardware.
+
+In some cases it would be good to have a datatype that truly uses one bit
+of storage for each Boolean. One such example is known as the  {\it packed}
+Boolean array, where an array of $64$ elements takes $8$ bytes.
+
+Here we create an ADT for packed Boolean arrays, allowing logical
+operations to be performed on an entire array, and individual bits to
+be set and unset.
+
+\noindent
+This will involve manipulation of the bits of the data
+using the C bitwise logical operators `xor' (\verb#^#), `or' (\verb^|^) and `and' (\verb^&^).
+\wwwurl{https://en.wikipedia.org/wiki/Bitwise\_operation}
+
+\begin{exercise}
+\label{ex:packedboolarr}
+Given the files \verb^testboolarr.c^ and \verb^boolarr.h^, complete the
+Boolean Array ADT using a reallocating array of unsigned chars. You will
+need to write both \verb^realloc.c^, which will define the functions
+in boolarr.h, and \verb^specific.h^, which will contain your header
+information.  Ignoring the overhead of the main structure, which might
+store the capacity of the underlying array, and the number of valid bits
+in use, the array should be around $~$\verb^nbits^$/8$ bytes in length.
+\end{exercise}

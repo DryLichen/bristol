@@ -1,0 +1,6 @@
+{
+    "files.associations": {
+        "neillsdl2.h": "c",
+        "math.h": "c"
+    }
+}

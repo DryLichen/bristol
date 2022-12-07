@@ -1,0 +1,8 @@
+{
+    "files.associations": {
+        "arr.h": "c",
+        "general.h": "c",
+        "specific.h": "c",
+        "string_view": "c"
+    }
+}

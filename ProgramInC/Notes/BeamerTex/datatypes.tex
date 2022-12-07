@@ -1,0 +1,384 @@
+\section{F: Data Types, Maths and Characters}
+
+%------------------------------------------------
+
+\begin{frame}[fragile]
+\frametitle{Fundamental Data types}
+
+\begin{columns}
+
+\begin{column}[c]{0.35\textwidth}
+{\small
+\begin{itemize}[<+->]
+\item {\bf [} unsigned $|$ signed {\bf ]}
+\item {\bf [} long $|$ short {\bf ]}
+\item {\bf [} char | int $|$ float $|$ double {\bf ]}
+\item The use of {\tt int} implies {\tt signed int} without the need to state it.
+\item Likewise {\tt unsigned short} means {\tt unsigned short int}.
+\end{itemize}
+}
+\end{column}
+
+\pause
+\begin{column}[c]{0.60\textwidth}
+{\tiny
+\begin{tabular}{|l|l|l|} \hline
+Type & Minimum size (bits) & Format specifier \\ \hline
+%
+char & 8 & \%c \\ \hline
+%
+signed char & 8 & \%c (or \%hhi for numerical output) \\ \hline
+%
+unsigned char & 8 & \%c (or \%hhu for numerical output) \\ \hline
+%
+short & 16 & \%hi or \%hi \\
+short int &  &  \\
+signed short &  &  \\
+signed short int &  &  \\ \hline
+%
+unsigned short & 16 & \%hu \\
+unsigned short int &  &  \\ \hline
+%
+int & 16 & Identical for printf : \%i or \%d \\
+signed &  & For scanf, \%d input decimal only \\
+signed int &  & For scanf, \%i auto-detects format (octal,decimal,hex)\\ \hline
+%
+unsigned & 16 & \%u \\
+unsigned int &  &  \\ \hline
+%
+long & 32 & \%ld or \%li \\
+long int &  &  \\
+signed long &  &  \\
+signed long int &  &  \\ \hline
+%
+unsigned long & 32 & \%lu \\
+unsigned long int &  &  \\ \hline
+long long & 64 & \%lli or \%lld \\
+long long int &  &  \\
+signed long long &  &  \\
+signed long long int &  &  \\ \hline
+%
+unsigned long long & 64 & \%llu \\
+unsigned long long int &  &  \\ \hline
+%
+float &  & scanf(): \\
+ &  & \%f, \%g, \%e, \%a \\ \hline
+%
+double &  & \%lf, \%lg, \%le, \%la \\ \hline 
+%
+long double & & \%Lf, \%Lg, \%Le, \%La \\ \hline
+\end{tabular}
+}
+\end{column}
+
+\end{columns}
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}[fragile]
+\frametitle{Binary Storage of Numbers}
+
+\begin{columns}
+
+\begin{column}{0.45\textwidth}
+In an unsigned char :
+\begin{center}
+\begin{tabular}{|c|c|c|c|c|c|c|c|}\hline
+$2^7$ & $2^6$ & $2^5$ & $2^4$ & $2^3$ & $2^2$ & $2^1$ & $2^0$ \\ \hline
+0     & 1     & 0     & 0     & 1     & 1     & 0     & 0     \\ \hline
+\end{tabular}
+\end{center}
+
+The above represents : $1 * 64 + 1 * 8 + 1 * 4 = 76$.
+
+\begin{itemize}[<+->]
+\item Floating operations need not be exact.
+\end{itemize}
+\lstinputlisting[style=basicc]{../Code/ChapF/prec1.c}
+\outputlisting{../Code/ChapF/prec1.autoout}
+\end{column}
+
+\pause
+\begin{column}{0.45\textwidth}
+\begin{itemize}[<+->]
+\item Not all floats are representable so are only approximated.
+\item Since floats may not be stored exactly, it doesn't make sense to try and compare them:
+\begin{lstlisting}[style=basicc,numbers=none]
+if ( d == 0.3 )
+\end{lstlisting}
+\item Therefore, we don't allow this by explicitly using the compiler warning flag: {\tt -Wfloat-equal}
+\end{itemize}
+\end{column}
+
+\end{columns}
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}[fragile]
+\frametitle{\tt sizeof()}
+
+\begin{columns}
+
+\begin{column}{0.45\textwidth}
+To find the exact size in bytes of a type on a particular machine,
+use {\tt sizeof()}. On a Dell Windows 10 laptop running WSL:
+\lstinputlisting[style=basicc]{../Code/ChapF/sizeof.c}
+\end{column}
+
+\pause
+\begin{column}{0.40\textwidth}
+\outputlisting{../Code/ChapF/sizeof.autoout}
+\end{column}
+
+\end{columns}
+\end{frame} 
+
+%------------------------------------------------
+
+\begin{frame}[fragile]
+\frametitle{Mathematical Functions}
+
+\begin{itemize}[<+->]
+\item There are no mathematical functions built into the C language.
+\item However, there are many functions in the maths library
+which may linked in using the {\bf -lm} option with the compiler.
+\item Functions include :
+\begin{verbatim}
+sqrt()  pow() round() 
+fabs() exp()  log()
+sin()  cos()  tan()
+\end{verbatim}
+\item Most take {\tt double}s as arguments and return {\tt double}s.
+\end{itemize}
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}[fragile]
+\frametitle{Casting}
+\begin{columns}
+
+\begin{column}{0.45\textwidth}
+\lstinputlisting[style=basicc]{../Code/ChapF/math1.c}
+\outputlisting{../Code/ChapF/math1.manout}
+\end{column}
+
+\begin{column}{0.45\textwidth}
+\begin{itemize}[<+->]
+\item An explicit type conversion is called a {\it cast}.
+\item {\it If it moves - cast it}. Don't trust the compiler to do it for you~!
+\end{itemize}
+\end{column}
+
+
+\end{columns}
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}[fragile]
+\frametitle{Storage of Characters}
+\begin{columns}
+
+\begin{column}{0.45\textwidth}
+\begin{itemize}[<+->]
+\item Characters are stored in the machine as one byte (generally $8$-bits storing one
+of {\bf 256} possible values).
+\item These may be thought of a characters, or very small integers.
+\item Only a subset of these 256 values are required
+for the printable characters, space, newline etc.
+\item Declaration:
+\begin{verbatim}
+char c;
+
+c = 'A';
+\end{verbatim}
+or :
+\begin{verbatim}
+char c1 = 'A', c2 = '*', c3 = ';' ;
+\end{verbatim}
+\end{itemize}
+\end{column}
+
+\pause
+\begin{column}{0.45\textwidth}
+\begin{itemize}[<+->]
+\item The particular integer used to represent a character
+is dependent on the encoding used. The most common
+of these, used on most UNIX and PC platforms, is ASCII.
+
+\begin{center}
+\begin{tabular}{|l|lllll|}\hline
+lowercase   & 'a' & 'b' & 'c' & \verb^...^ & 'z' \\
+ASCII value & 97  &  98 &  99 & \verb^...^ & 112 \\ \hline
+uppercase   & 'A' & 'B' & 'C' & \verb^...^ & 'Z' \\
+ASCII value & 65  &  66 &  67 & \verb^...^ &  90 \\ \hline
+digit       & '0' & '1' & '2' & \verb^...^ & '9' \\
+ASCII value & 48  &  49 &  50 & \verb^...^ &  57 \\ \hline
+other       & '\&' & '*' & '+' & \verb^...^ & \\
+ASCII value & 38  &  42 &  43 & \verb^...^ & \\ \hline
+\end{tabular}
+\end{center}
+
+\pause
+\begin{tikzpicture}[remember picture, overlay]
+        \draw[line width=3mm,color=red,opacity=0.6] (0,0.00) -- (6.25,3.90) (6.25,0.00) -- (0,3.90);
+\end{tikzpicture}
+
+\end{itemize}
+\end{column}
+
+\end{columns}
+\end{frame}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\begin{frame}[fragile]
+\frametitle{Using Characters}
+\begin{columns}
+
+\begin{column}{0.45\textwidth}
+\begin{itemize}[<+->]
+\item When using \verb^printf()^ and \verb^scanf()^ the formats
+\verb^%c^ and \verb^%i^ do very different things :
+\begin{verbatim}
+char c = 'a'
+printf("%c\n", c); /* prints : a  */
+printf("%i\n", c); /* prints : 97 */
+\end{verbatim}
+\item Hard-to-print characters have an escape sequence
+i.e. to print a newline, the 2 character escape \verb^'\n'^ is used.
+\end{itemize}
+\end{column}
+
+\begin{column}{0.55\textwidth}
+{\small
+\begin{tabular}{|l|l|l|}\hline
+Escape sequence	& Hex value & Character \\ \hline
+\textbackslash a & 07 & Alert (Beep, Bell)\\
+\textbackslash b &08&Backspace\\
+\textbackslash e &1B&Escape character\\
+\textbackslash f &0C&Formfeed Page Break\\
+\textbackslash n &0A&Newline (Line Feed)\\
+\textbackslash r &0D&Carriage Return\\
+\textbackslash t &09&Horizontal Tab\\
+\textbackslash v &0B&Vertical Tab\\
+\textbackslash\textbackslash &5C&Backslash\\
+\textbackslash ' &27&Apostrophe \\
+\textbackslash " &22&Double quote \\
+\textbackslash ? &3F&Question mark \\ \hline
+\end{tabular}
+}
+\end{column}
+
+\end{columns}
+\end{frame}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\begin{frame}[fragile]
+\frametitle{Using {\tt getchar()} and {\tt putchar()}}
+\begin{columns}[T]
+\begin{column}{0.45\textwidth}
+
+\lstinputlisting[style=basicc]{../Code/ChapF/dblout1.c}
+\outputlisting{../Code/ChapF/dblout1.manout}
+
+{\footnotesize
+This has the unfortunate problem of requiring a `special' character to terminate.
+More aggressively, the user could terminate by pressing {\tt CTRL-C}.
+}
+\end{column}
+
+\pause
+\begin{column}{0.45\textwidth}
+\lstinputlisting[style=basicc]{../Code/ChapF/dblout2.c}
+\outputlisting{../Code/ChapF/dblout2.manout}
+
+{\footnotesize
+The end-of-file constant is defined in {\tt stdio.h}. Although
+system dependent, {\tt -1} is often used. On the UNIX system
+this is generated when the end of a file being piped is reached,
+or when {\tt CTRL-D} is pressed.
+}
+\end{column}
+\end{columns}
+\end{frame}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{frame}[fragile]
+\frametitle{Capitalization}
+\begin{columns}[T]
+\begin{column}{0.45\textwidth}
+
+\lstinputlisting[style=basicc]{../Code/ChapF/caps1.c}
+\outputlisting{../Code/ChapF/caps1.manout}
+
+{\footnotesize
+This is more easily achieved by using some of
+the definitions found in {\tt ctype.h}.
+}
+\end{column}
+
+
+\pause
+\begin{column}{0.45\textwidth}
+\begin{center}
+\begin{tabular}{|l|l|} \hline
+Macro        & {\tt true} returned if: \\ \hline
+isalnum(int c) & Letter or digit \\
+isalpha(int c) & Letter \\
+iscntrl(int c) & Control character \\
+isdigit(int c) & Digit \\
+isgraph(int c) & Printable (not space) \\
+islower(int c) & Lowercase\\
+isprint(int c) & Printable\\
+ispunct(int c) & Punctuation\\
+isspace(int c) & White Space\\
+isupper(int c) & Uppercase\\
+isxdigit(int c)& Hexadecimal\\
+isascii(int c) & ASCII code \\ \hline
+\end{tabular}
+\end{center}
+\end{column}
+
+\end{columns}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\begin{frame}[fragile]
+\frametitle{{\tt ctype.h}}
+\begin{columns}[T]
+
+\begin{column}{0.45\textwidth}
+Some useful functions are :
+\begin{center}
+\begin{tabular}{|l|l|} \hline
+Function/Macro & Returns: \\ \hline
+int tolower(int c) & Lowercase c \\
+int toupper(int c) & Uppercase c \\
+int toascii(int c) & ASCII code for c \\ \hline
+\end{tabular}
+\end{center}
+\lstinputlisting[style=basicc]{../Code/ChapF/caps2.c}
+\end{column}
+
+\pause
+\begin{column}{0.45\textwidth}
+\lstinputlisting[style=basicc]{../Code/ChapF/caps3.c}
+\outputlisting{../Code/ChapF/caps3.manout}
+\end{column}
+
+\end{columns}
+\end{frame}
