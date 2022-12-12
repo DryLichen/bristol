@@ -118,7 +118,7 @@ int main(void)
    // Adds a ill-defined cons struct to the front of the list 
    // lisp_getval(l10) is undefined - but shouldn't crash your program.
    lisp* l12 = lisp_cons(NULL, l10); 
-   assert(lisp_length(l12) == lisp_length(l10) + 1);
+   assert(lisp_length(l12)==lisp_length(l10)+1);
    lisp_free(&l12);
    
 
@@ -143,8 +143,7 @@ int main(void)
    lisp* g2 = lisp_list(5, g1, atom(-123456), copy(g1), atom(25),
                         fromstring("(1 (2 (3 (4 5))))"));
    lisp_tostring(g2, str);
-   printf("%s", str);
-   // assert(strcmp(str, "((6 7 8) -123456 (6 7 8) 25 (1 (2 (3 (4 5)))))")==0);
+   assert(strcmp(str, "((6 7 8) -123456 (6 7 8) 25 (1 (2 (3 (4 5)))))")==0);
    // g2 reuses g1, so no need to lisp_free(g1)
    lisp_free(&g2);
    assert(!g2);
@@ -152,24 +151,24 @@ int main(void)
    /*--------------------------------------------------*/
    /* lisp_reduce() tests - calls func for every atom  */
    /*--------------------------------------------------*/
-   // lisp* h1 = lisp_fromstring("(1 2 3 4)");
-   // lisp* h2 = lisp_fromstring("(1 2 (7) 3)");
-   // atomtype acc = 1;
-   // lisp_reduce(times, h1, &acc);
-   // assert(acc==24);
-   // acc = 1;
-   // lisp_reduce(times, h2, &acc);
-   // assert(acc==42);
-   // acc = 0;
-   // lisp_reduce(atms, h1, &acc);
-   // assert(acc=4);
-   // acc = 0;
-   // lisp_reduce(atms, h2, &acc);
-   // assert(acc=4);
-   // lisp_free(&h1);
-   // assert(!h1);
-   // lisp_free(&h2);
-   // assert(!h2);
+   lisp* h1 = lisp_fromstring("(1 2 3 4)");
+   lisp* h2 = lisp_fromstring("(1 2 (7) 3)");
+   atomtype acc = 1;
+   lisp_reduce(times, h1, &acc);
+   assert(acc==24);
+   acc = 1;
+   lisp_reduce(times, h2, &acc);
+   assert(acc==42);
+   acc = 0;
+   lisp_reduce(atms, h1, &acc);
+   assert(acc=4);
+   acc = 0;
+   lisp_reduce(atms, h2, &acc);
+   assert(acc=4);
+   lisp_free(&h1);
+   assert(!h1);
+   lisp_free(&h2);
+   assert(!h2);
    printf("End\n");
    return 0;
 }

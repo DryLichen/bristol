@@ -4,6 +4,7 @@
 
 _start: 
     mov r0, #25
+    
 _loop:
     
 

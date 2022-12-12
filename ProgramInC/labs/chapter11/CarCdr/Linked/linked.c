@@ -1,5 +1,4 @@
 #include "../lisp.h"
-#include "../../../../../ADTs/General/general.h"
 #include "specific.h"
 
 // Returns element 'a' - this is not a list, and
@@ -30,6 +29,7 @@ lisp* lisp_cons(const lisp* l1,  const lisp* l2) {
 // Returns the car (1st) component of the list 'l'.
 // Does not copy any data.
 lisp* lisp_car(const lisp* l) {
+    // null pointer
     if (l == NULL) {
         return NULL;
     }
@@ -40,6 +40,7 @@ lisp* lisp_car(const lisp* l) {
 // Returns the cdr (all but the 1st) component of the list 'l'.
 // Does not copy any data.
 lisp* lisp_cdr(const lisp* l) {
+    // null pointer
     if (l == NULL) {
         return NULL;
     }
@@ -50,10 +51,8 @@ lisp* lisp_cdr(const lisp* l) {
 // Returns the data/value stored in the cons 'l'
 atomtype lisp_getval(const lisp* l) {
     if (l == NULL) {
-        fprintf(stderr, "Wrong parameter");
         exit(EXIT_FAILURE);
     }
-
     return l->atom;
 }
 
@@ -64,14 +63,13 @@ lisp* lisp_copy(const lisp* l) {
         return NULL;
     }
 
-    // leaf casee
+    // leaf case
     if (lisp_isatomic(l)) {
         return lisp_atom(lisp_getval(l)); 
     }
 
-    // general cases
+    // general case
     lisp* copyLisp = lisp_atom(DEFAULT);
-    
     copyHelper(copyLisp, l);
 
     return copyLisp;
@@ -116,15 +114,15 @@ int lisp_length(const lisp* l) {
 
 // Returns stringified version of list
 void lisp_tostring(const lisp* l, char* str) {
-    // only a leaf
+    // leaf case
     if (lisp_isatomic(l)) {
         char tmp[STRLEN];
-        sprintf(tmp, "%i", lisp_getval(l));
+        assert(sprintf(tmp, "%i", lisp_getval(l)) != -1);
         strcpy(str, tmp);
         return;
     }
 
-    // general cases
+    // general case
     *str = '(';
     int ptr = 0;
     toStringHelper(l, str, &ptr);
@@ -132,23 +130,28 @@ void lisp_tostring(const lisp* l, char* str) {
 }
 
 void toStringHelper(const lisp* l, char* str, int* ptr) {
+    // write a ) when the end of a lisp is detected
     if (l == NULL) {
         writeChar(str, ptr, ')');
         return;
     }
 
+    // write atoms
     if (lisp_isatomic(l)) {
+        // if the last char is a digit or a right bracket, insert a space
         if (isSpace(str, ptr)) {
             writeChar(str, ptr, ' ');
         }
         char tmp[STRLEN];
-        sprintf(tmp, "%i", lisp_getval(l));
+        assert(sprintf(tmp, "%i", lisp_getval(l)) != -1);
         strcpy(str + *ptr + 1, tmp);
         (*ptr) += strlen(tmp);
         return;
     }
 
+    // write left brackets 
     if (isBracket(l)) {
+        // a space should be insert when the last char is a digit
         if (isSpace(str, ptr)) {
             writeChar(str, ptr, ' ');
         }
@@ -159,6 +162,7 @@ void toStringHelper(const lisp* l, char* str, int* ptr) {
     toStringHelper(lisp_cdr(l), str, ptr);
 }
 
+// write char c into the next position of str
 void writeChar(char* str, int* ptr, char c) {
     (*ptr)++;
     *(str + *ptr) = c;
@@ -177,11 +181,13 @@ bool lisp_isatomic(const lisp* l) {
     return false;
 }
 
+// return true when the next char should be a left bracket
+// a left bracket is needed when a child node is detected
 bool isBracket(const lisp* l) {
     if (l == NULL) {
         return false;
     }
-
+    // return false when detect a mother node
     if (lisp_isatomic(lisp_car(l))) {
         return false; 
     }
@@ -189,9 +195,11 @@ bool isBracket(const lisp* l) {
     return true;
 }
 
+// return true when the next char should be space
+// a space should be inserted between two digit or a digit and a right bracket
 bool isSpace(char* str, int *ptr) {
     char c = *(str + *ptr);
-    if ((c <= '9' && c >= '0') || c == ')') {
+    if (isdigit(c) || c == ')') {
         return true;
     }
 
@@ -201,20 +209,15 @@ bool isSpace(char* str, int *ptr) {
 // Clears up all space used
 // Double pointer allows function to set 'l' to NULL on success
 void lisp_free(lisp** l) {
-    freeHelper(*l);
-    *l = NULL;
-}
-
-void freeHelper(lisp* l) {
-    if (l == NULL) {
+    if (*l == NULL) {
         return;
     }
 
-    freeHelper(l->car);
-    freeHelper(l->cdr);
-    free(l);
+    lisp_free(&((*l)->car));
+    lisp_free(&((*l)->cdr));
+    free((*l));
+    *l = NULL;
 }
-
 
 /* ------------- Tougher Ones : Extensions ---------------*/
 
@@ -226,19 +229,15 @@ lisp* lisp_fromstring(const char* str) {
     }
 
     // leaf case
-    if (isdigit(*str)) {
-        if (strlen(str) == 1) {
-            return lisp_atom(*str);
-        }
-        
-        fprintf(stderr, "Wrong format of lisp string!");
-        exit(EXIT_FAILURE);
+    if (isdigit(*str) || *str == '-') {
+        int tmp;
+        assert(sscanf(str, "%d", &tmp) == 1);
+        return lisp_atom(tmp);
     }
 
     // general cases
     lisp* l = lisp_atom(DEFAULT);
     int ptr = 1;
-
     fromStringHelper(l, str, &ptr);
 
     return l;
@@ -260,19 +259,18 @@ void fromStringHelper(lisp* l, const char* str, int* ptr) {
         l->cdr = lisp_atom(DEFAULT);
         (*ptr)++;
         fromStringHelper(l->cdr, str, ptr);
-        return;
     }
 
     if (str[*ptr] == '(') {
         l->car = lisp_atom(DEFAULT);
         (*ptr)++;
         fromStringHelper(l->car, str, ptr);
+        // after the traversal of children, if a space detected, traverse parents horizontally
         if (str[*ptr] == ' ') {
             l->cdr = lisp_atom(DEFAULT);
             (*ptr)++;
             fromStringHelper(l->cdr, str, ptr);
         }
-        return;
     }
 
     if (str[*ptr] == ')') {
@@ -281,6 +279,8 @@ void fromStringHelper(lisp* l, const char* str, int* ptr) {
     }
 }
 
+
+// return the number of digits, including the negatie sign
 int getNumLen(int num) {
     int count = (num <= 0) ? 1 : 0;
 
@@ -301,57 +301,127 @@ lisp* lisp_list(const int n, ...) {
     va_start(valist, n);
 
     // initiate the first node and the pointer pointing to the last item
-    lisp* newLisp = getListNode(va_arg(valist, lisp*));
-    lisp* ptr = getLast(newLisp);
+    lisp* newLisp = lisp_atom(DEFAULT);
+    lisp* ptr = newLisp;
     lisp* l = NULL;
 
-    for (int i = 1; i < n; i++) {
+    for (int i = 0; i < n; i++) {
         l = va_arg(valist, lisp*);
-        ptr->cdr = getListNode(l);
-        ptr = getLast(ptr);
+        if (l != NULL) {
+            ptr->car = l;
+            if (i != n - 1) {
+                ptr->cdr = lisp_atom(DEFAULT);
+                ptr = lisp_cdr(ptr);
+            }
+        }
     }
 
     va_end(valist);
     return newLisp;
 }
 
-// return a new lisp if source node is a leaf, otherwise return source node
-lisp* getListNode(lisp* src) {
-    // leaf case
-    if (lisp_isatomic(src)) {
-        lisp* dest = lisp_atom(DEFAULT);
-        dest->car = src;
-        return dest;
-    }
-
-    // lisp case
-    return src;
-}
-
-// get the last node of a lisp
-lisp* getLast(lisp* l) {
-    while (lisp_cdr(l) != NULL) {
-        l = lisp_cdr(l);
-    }
-
-    return l;
-}
-
 // Allow a user defined function 'func' to be applied to
 // each atom in the list l.
 // The user-defined 'func' is passed a pointer to a cons,
 // and will maintain an accumulator of the result.
-// void lisp_reduce(void (*func)(lisp* l, atomtype* n), lisp* l, atomtype* acc);
+void lisp_reduce(void (*func)(lisp* l, atomtype* n), lisp* l, atomtype* acc) {
+    if (l == NULL) {
+        return;
+    }
+    
+    if (lisp_isatomic(l)) {
+        func(l, acc);
+        return;
+    }
 
-// void reduceHelper(atomtype(*func)(lisp* l), lisp* l) {
-
-// }
+    lisp_reduce(func, lisp_car(l), acc);
+    lisp_reduce(func, lisp_cdr(l), acc);
+}
 
 void test() {
     char str[STRLEN];
-    lisp* l1 = lisp_cons(lisp_atom(-1), lisp_cons(lisp_atom(0), lisp_cons(lisp_atom(1), NULL)));
 
+    // tests for initiation methods
+    lisp* l1 = lisp_cons(lisp_atom(0), lisp_cons(lisp_atom(2), NULL));
+    lisp* l2 = lisp_cons(lisp_atom(3), lisp_cons(l1, NULL));
+    lisp* l3 = lisp_cons(lisp_atom(-1), lisp_cons(l2, lisp_cons(lisp_atom(405), NULL)));
+
+    // tests for lisp_cdr, car and getval
+    assert(lisp_getval(lisp_car(l1)) == 0);
+    assert(lisp_getval(lisp_car(lisp_car(lisp_cdr(l2)))) == 0);
+
+    // tests for deep copy
+    lisp* l4 = NULL;
+    lisp* l5 = NULL;
+    assert(lisp_copy(l4) == NULL);
+    l4 = lisp_atom(-3);
+    l5 = lisp_copy(l4);
+    assert(lisp_car(l5) == NULL);
+    assert(lisp_getval(l5) == -3);
+    assert(lisp_cdr(l5) == NULL);
+    assert(&l4 != &l5);
+    lisp_free(&l4);
+    lisp_free(&l5);
+    l4 = lisp_copy(l3);
+    assert(lisp_getval(lisp_car(lisp_cdr(lisp_cdr(l4)))) == 405);
+    lisp_free(&l4);
+
+    // tests for lisp_length
+    assert(lisp_length(l1) == 2);
+    assert(lisp_length(l2) == 2);
+    assert(lisp_length(l3) == 3);
+
+    // tests for isatomic
+    l4 = lisp_atom(0);
+    assert(lisp_isatomic(l4));
+    lisp_free(&l4);
+
+    // tests for writeChar
+    *str = 'a';
+    *(str + 1) = 'b';
+    *(str + 2) = '7';
+    int ptr = 0;
+    writeChar(str, &ptr, 'c');
+    assert(*str == 'a' && str[ptr] == 'c');
+    // tests for isBracket and isSpace
+    assert(lisp_cdr(l2));
+    ptr = 2;
+    assert(isSpace(str, &ptr));
+
+    // tests for toString
     lisp_tostring(l1, str);
-    printf("%s\n", str);
-    lisp_free(&l1);
+    assert(strcmp(str, "(0 2)") == 0);
+    lisp_tostring(l2, str);
+    assert(strcmp(str, "(3 (0 2))")  == 0);
+    lisp_tostring(l3, str);
+    assert(strcmp(str, "(-1 (3 (0 2)) 405)") == 0);
+
+    // tests for lisp_free
+    lisp_tostring(l3, str);
+    lisp_free(&l3);
+    assert(l3 == NULL);
+
+    // tests for fromString
+    char inp[5][STRLEN] = {"()", "(1)", "-3", "(0 (1 -2) 3 4 50)", "((-1 2) (3 (0) 4) (5 (6 7)))"};
+    for(int i=0; i<5; i++){
+      lisp* f1 = lisp_fromstring(inp[i]);
+      lisp_tostring(f1, str);
+      assert(strcmp(str, inp[i])==0);
+      lisp_free(&f1);
+      assert(!f1);
+    }    
+
+    // tests for getNumLen
+    assert(getNumLen(445) == 3);
+    assert(getNumLen(0) == 1);
+    assert(getNumLen(-445) == 4);
+
+    // tests for lisp_list
+    l1 = lisp_cons(lisp_atom(0), lisp_cons(lisp_atom(2), NULL));
+    l2 = lisp_list(2, lisp_atom(3), l1);
+    l3 = lisp_list(3, l2, lisp_copy(l1), lisp_atom(-100));
+    lisp_tostring(l3, str);
+    assert(strcmp("((3 (0 2)) (0 2) -100)", str) == 0);
+    lisp_free(&l3);
+    assert(!l3);
 }
