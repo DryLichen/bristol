@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <ModuleSim>
-  <view camX="-222.7645579353582" camY="-271.89590805157866" zoom="3"/>
+  <view camX="-220.43370576546" camY="-313.2694899792034" zoom="3"/>
   <ModuleSim>
     <module ID="0" type="ADDSUB">
       <dim orient="0" x="75.0" y="-300.0"/>

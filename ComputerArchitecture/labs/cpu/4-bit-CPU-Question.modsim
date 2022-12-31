@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <ModuleSim>
-  <view camX="-324.86220850624295" camY="33.945673220066624" zoom="3"/>
+  <view camX="-461.3290485690627" camY="-359.63394802060884" zoom="3"/>
   <ModuleSim>
     <module ID="0" type="ADDSUB">
       <dim orient="0" x="75.0" y="-300.0"/>
@@ -26,7 +26,7 @@
         <output ID="10"/>
         <output ID="11"/>
       </outputs>
-      <data label="Holding Reg" label_size="1" latched_value="0100"/>
+      <data label="Holding Reg" label_size="1" latched_value="0000"/>
     </module>
     <module ID="12" type="SWITCH">
       <dim orient="0" x="1800.0" y="475.0"/>
@@ -52,7 +52,7 @@
         <output ID="23"/>
         <output ID="24"/>
       </outputs>
-      <data label="" label_size="0" memory_store="2c&#9;3e&#9;60&#9;4a&#9;2d&#9;3f&#9;60&#9;72&#9;3a&#9;50&#9;04&#9;fa&#9;f5&#9;f9&#9;f1&#9;f8&#9;00&#9;" write_jumper="1"/>
+      <data label="" label_size="0" memory_store="01&#9;03&#9;07&#9;0f&#9;02&#9;20&#9;21&#9;22&#9;23&#9;24&#9;71&#9;30&#9;31&#9;32&#9;33&#9;34&#9;00&#9;" write_jumper="1"/>
     </module>
     <module ID="25" type="MUX">
       <dim orient="0" x="-100.0" y="-75.0"/>
@@ -92,7 +92,7 @@
         <output ID="42"/>
         <output ID="43"/>
       </outputs>
-      <data label="PC" label_size="1" latched_value="1001"/>
+      <data label="PC" label_size="1" latched_value="0000"/>
     </module>
     <module ID="44" type="REGISTER">
       <dim orient="0" x="-200.0" y="375.0"/>
@@ -104,7 +104,7 @@
         <output ID="47"/>
         <output ID="48"/>
       </outputs>
-      <data label="Reg A" label_size="1" latched_value="1010"/>
+      <data label="Reg A" label_size="1" latched_value="0000"/>
     </module>
     <module ID="49" type="FANOUT">
       <dim orient="0" x="150.0" y="725.0"/>
@@ -129,7 +129,7 @@
         <output ID="58"/>
         <output ID="59"/>
       </outputs>
-      <data label="Op Code" label_size="1" latched_value="0011"/>
+      <data label="Op Code" label_size="1" latched_value="0000"/>
     </module>
     <module ID="60" type="REGISTER">
       <dim orient="0" x="225.0" y="375.0"/>
@@ -141,7 +141,7 @@
         <output ID="63"/>
         <output ID="64"/>
       </outputs>
-      <data label="Reg B" label_size="1" latched_value="0100"/>
+      <data label="Reg B" label_size="1" latched_value="0000"/>
     </module>
     <module ID="65" type="FANOUT">
       <dim orient="0" x="-200.0" y="250.0"/>
@@ -166,7 +166,7 @@
         <output ID="74"/>
         <output ID="75"/>
       </outputs>
-      <data label="O Reg" label_size="1" latched_value="1010"/>
+      <data label="O Reg" label_size="1" latched_value="0000"/>
     </module>
     <module ID="76" type="MUX">
       <dim orient="0" x="275.0" y="-75.0"/>
@@ -207,7 +207,7 @@
         <output ID="94"/>
         <output ID="95"/>
       </outputs>
-      <data label="" label_size="0" latched_value="0011"/>
+      <data label="" label_size="0" latched_value="0000"/>
     </module>
     <module ID="96" type="REGISTER">
       <dim orient="0" x="1775.0" y="-75.0"/>
@@ -219,7 +219,7 @@
         <output ID="99"/>
         <output ID="100"/>
       </outputs>
-      <data label="" label_size="0" latched_value="0010"/>
+      <data label="" label_size="0" latched_value="0000"/>
     </module>
     <module ID="101" type="CLOCK">
       <dim orient="0" x="2050.0" y="-50.0"/>

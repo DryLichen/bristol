@@ -1,4 +1,4 @@
-CC=gcc
+CC=clang
 COMMON= -Wall -Wextra -Wfloat-equal -Wpedantic -Wvla -std=c99 -Werror
 DEBUG= -g3
 SANITIZE= $(COMMON) -fsanitize=undefined -fsanitize=address $(DEBUG)
@@ -24,4 +24,4 @@ clean:
 
 run: all
 	./testlinked_s
-	valgrind --quiet ./testlinked_v
+	valgrind ./testlinked_v
