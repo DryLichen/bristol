@@ -34,7 +34,7 @@ _start:
 
     @ find the largest number between r0 and r3.
     @ Assign the largest number to r7 and the smallest to r6
-    cmp, r0, r3
+    cmp r0, r3
     ble _r0_less_equal_r3
     mov r6, r3
     mov r7, r0
@@ -43,7 +43,7 @@ _r0_less_equal_r3:
     mov r6, r0
     mov r7, r3
 
-_check_sgins:
+_check_signs:
     @ r9 = 0x80000000 if r0 < 0 ; r9 = 0 if r0 > 0
     and r9, r0, r4
     @ r10 = 0x80000000 if r3 < 0 ; r10 = 0 if r3 > 0
@@ -54,6 +54,7 @@ _check_sgins:
     beq _both_positive_negative
     
     @ a and d is of different sign
+    @ if r4/(the smaller num) is less than the larger num, overflow will happen
     sdiv r11, r4, r6
     cmp r7, r11
     bgt _wrong_result
@@ -62,6 +63,7 @@ _both_positive_negative:
     tst r0, r4
     beq _both_positive
     @ both negative
+    @ convert to positive nums
     mov r8, #-1
     mul r9, r6, r8
     mul r10, r7, r8
@@ -69,15 +71,16 @@ _both_positive_negative:
     mov r7, r10
 
 _both_positive:
+    @ if r5/(the smaller num) is less than the larger num, carryout will happen 
     udiv r6, r5, r6
     cmp r7, r6
     bgt _wrong_result
 
-    mov r8, #0
+    mov r8, #1
     b _end
 
 _wrong_result:
-    mov r8, #1
+    mov r8, #-1
     b _end
 
 _end:

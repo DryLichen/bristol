@@ -47,4 +47,4 @@ _end:
 
 .section .data
 _matrix:
-.word 6,1,1,4,-2,5,2,8,7 // a,b,c,d,e,f,g,h,i
+.word 6,1,1,4,-2,5,2,8,7 @ a,b,c,d,e,f,g,h,i
