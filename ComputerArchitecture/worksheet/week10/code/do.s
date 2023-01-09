@@ -3,8 +3,8 @@
 .global _start
 
 _start:
-    mov r0, #1
-    mov r1, 5
+    mov r0, #1  @ a 
+    mov r1, #5  @ b
 
 _loop:
     add r0, #1
@@ -12,4 +12,5 @@ _loop:
     blt _loop
 
 _end:
-    b _ed
+    b _end
+    
