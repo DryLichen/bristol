@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <ModuleSim>
-  <view camX="-461.3290485690627" camY="-359.63394802060884" zoom="3"/>
+  <view camX="-398.02426552969996" camY="92.96452061676132" zoom="3"/>
   <ModuleSim>
     <module ID="0" type="ADDSUB">
       <dim orient="0" x="75.0" y="-300.0"/>
@@ -26,7 +26,7 @@
         <output ID="10"/>
         <output ID="11"/>
       </outputs>
-      <data label="Holding Reg" label_size="1" latched_value="0000"/>
+      <data label="Holding Reg" label_size="1" latched_value="1100"/>
     </module>
     <module ID="12" type="SWITCH">
       <dim orient="0" x="1800.0" y="475.0"/>
@@ -52,7 +52,7 @@
         <output ID="23"/>
         <output ID="24"/>
       </outputs>
-      <data label="" label_size="0" memory_store="01&#9;03&#9;07&#9;0f&#9;02&#9;20&#9;21&#9;22&#9;23&#9;24&#9;71&#9;30&#9;31&#9;32&#9;33&#9;34&#9;00&#9;" write_jumper="1"/>
+      <data label="" label_size="0" memory_store="2c&#9;3e&#9;60&#9;40&#9;2d&#9;3f&#9;60&#9;7a&#9;30&#9;50&#9;00&#9;0a&#9;01&#9;09&#9;05&#9;08&#9;00&#9;" write_jumper="1"/>
     </module>
     <module ID="25" type="MUX">
       <dim orient="0" x="-100.0" y="-75.0"/>
@@ -228,7 +228,7 @@
         <output ID="102"/>
         <output ID="103"/>
       </outputs>
-      <data clock_phase="0" label="" label_size="0"/>
+      <data clock_phase="1" label="" label_size="0"/>
     </module>
     <module ID="104" type="DEMUX">
       <dim orient="0" x="1775.0" y="-325.0"/>
@@ -265,7 +265,7 @@
         <output ID="119"/>
         <output ID="120"/>
       </outputs>
-      <data label="" label_size="0"/>
+      <data label="1b" label_size="0"/>
     </module>
     <module ID="121" type="FANOUT">
       <dim orient="-1" x="1550.0" y="50.0"/>
@@ -278,7 +278,7 @@
         <output ID="124"/>
         <output ID="125"/>
       </outputs>
-      <data label="" label_size="0"/>
+      <data label="b" label_size="0"/>
     </module>
     <module ID="127" type="SPLIT_MERGE">
       <dim orient="0" x="900.0" y="150.0"/>
@@ -292,7 +292,7 @@
         <output ID="132"/>
         <output ID="133"/>
       </outputs>
-      <data label="" label_size="0"/>
+      <data label="2b" label_size="0"/>
     </module>
     <module ID="134" type="SPLIT_MERGE">
       <dim orient="2" x="-150.0" y="1050.0"/>
@@ -306,7 +306,7 @@
         <output ID="139"/>
         <output ID="140"/>
       </outputs>
-      <data label="" label_size="0"/>
+      <data label="3b" label_size="0"/>
     </module>
     <module ID="141" type="SPLIT_MERGE">
       <dim orient="2" x="275.0" y="1025.0"/>
@@ -320,7 +320,7 @@
         <output ID="146"/>
         <output ID="147"/>
       </outputs>
-      <data label="" label_size="0"/>
+      <data label="3b" label_size="0"/>
     </module>
     <module ID="148" type="FANOUT">
       <dim orient="-1" x="1150.0" y="1100.0"/>
@@ -333,7 +333,7 @@
         <output ID="151"/>
         <output ID="152"/>
       </outputs>
-      <data label="" label_size="0"/>
+      <data label="b" label_size="0"/>
     </module>
     <module ID="154" type="DEMUX">
       <dim orient="0" x="1525.0" y="4725.0"/>
@@ -348,7 +348,7 @@
         <output ID="160"/>
         <output ID="161"/>
       </outputs>
-      <data label="" label_size="0"/>
+      <data label="1" label_size="0"/>
     </module>
     <module ID="162" type="DEMUX">
       <dim orient="0" x="1400.0" y="4375.0"/>
@@ -422,7 +422,7 @@
         <output ID="199"/>
         <output ID="200"/>
       </outputs>
-      <data label="" label_size="0"/>
+      <data label="opcode" label_size="0"/>
     </module>
     <module ID="201" type="OR">
       <dim orient="0" x="0.0" y="2025.0"/>
@@ -580,7 +580,7 @@
         <output ID="279"/>
         <output ID="280"/>
       </outputs>
-      <data label="" label_size="0"/>
+      <data label="2" label_size="0"/>
     </module>
     <module ID="282" type="FANOUT">
       <dim orient="2" x="1175.0" y="-300.0"/>
@@ -593,7 +593,7 @@
         <output ID="285"/>
         <output ID="286"/>
       </outputs>
-      <data label="" label_size="0"/>
+      <data label="1" label_size="0"/>
     </module>
     <module ID="288" type="SPLIT_MERGE">
       <dim orient="2" x="-350.0" y="950.0"/>
@@ -607,7 +607,7 @@
         <output ID="293"/>
         <output ID="294"/>
       </outputs>
-      <data label="" label_size="0"/>
+      <data label="3b" label_size="0"/>
     </module>
     <module ID="295" type="FANOUT">
       <dim orient="0" x="1400.0" y="3675.0"/>
@@ -829,7 +829,7 @@
         <output ID="412"/>
         <output ID="413"/>
       </outputs>
-      <data label="Mux Mem/AU" label_size="1"/>
+      <data label="Mux Au/Mem" label_size="1"/>
     </module>
     <module ID="419" type="OR">
       <dim orient="0" x="175.0" y="2025.0"/>
