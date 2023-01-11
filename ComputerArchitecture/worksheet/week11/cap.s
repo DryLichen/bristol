@@ -4,6 +4,7 @@
 
 _start:
     ldr r0, =_data
+    ldr r3, =_data
     ldr r1, [r0]
 
     @ when detecting line feed, halt

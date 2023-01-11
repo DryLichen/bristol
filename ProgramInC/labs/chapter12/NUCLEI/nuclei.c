@@ -16,7 +16,7 @@ int main() {
 
 void prog(Program* p) {
     if (!strSame(p->wds[p->ptr], "(")) {
-        error("Expecting the first left bracket?");
+        error("Lack the first left bracket?");
     }
     (p->ptr)++;
     instrcts(p);
@@ -32,32 +32,66 @@ void instrcts(Program* p) {
 
 void instrct(Program* p) {
     if (!strSame(p->wds[p->ptr], "(")) {
-        error("Expecting a left bracket for a function?");
+        error("Lack the left bracket for a function?");
     }
     (p->ptr)++;
 
-    if (isList(p->wds[p->ptr])) {
-        list(p);
-    } else if (isIO(p->wds[p->ptr])) {
-        io(p);
+    if (isRetFun(p->wds[p->ptr])) {
+        retFun(p);
+    } else if (isIOFun(p->wds[p->ptr])) {
+        ioFun(p);
+    } else if (isIfFun(p->wds[p->ptr])) {
+        ifFun(p);
+    } else if (isLoopFun(p->wds[p->ptr])) {
+        isLoopFun(p);
     } else {
-        error("Expecting a function?");
+        error("Lack a function?");  
     }
-    
+
     if (!strSame(p->wds[p->ptr], ")")) {
-        error("Expecting a right bracket for a function?");
+        error("Lack the right bracket for a function?");
     }
     (p->ptr)++;
 }
 
-bool isList(char* str) {
-    if (strSame(str, "CAR") || strSame(str, "CDR") || strSame(str, "CONS")) {
+bool isRetFun(char* str) {
+    if (isListFun(str) || isIntFun(str) || isBoolFun(str)) {
         return true;
     }
     return false;
 }
 
-void list(Program* p) {
+bool isListFun(char* str) {
+    if (strSame(str, "CAR") || strSame(str, "CDR") || strSame(str, "CONS")) {
+        return true;
+    }
+}
+
+bool isIntFun(char* str) {
+    if(strSame(str, "PLUS") || strSame(str, "LENGTH")) {
+        return true;
+    }
+}
+
+bool isBoolFun(char* str) {
+    if (strSame(str, "LESS") || strSame(str, "GREATER") || strSame(str, "EQUAL")) {
+        return true;
+    }
+}
+
+void retFun(Program* p) {
+    if (isListFun(p->wds[p->ptr])) {
+        listFun(p);
+    }
+    if (isIntFun(p->wds[p->ptr])) {
+        intFun(p);
+    }
+    if (isBoolFun(p->wds[p->ptr])) {
+        boolFun(p);
+    }
+}
+
+void listFun(Program* p) {
     if (strSame(p->wds[p->ptr], "CAR")) {
         (p->ptr)++;
         getList(p, DEFADDR);
@@ -75,7 +109,15 @@ void list(Program* p) {
         return;
     }
     
-    error("Expecting a list function?");
+    error("Lack a list function?");
+}
+
+void intFun() {
+
+}
+
+void boolFun() {
+
 }
 
 // set the variable referred by addr
@@ -97,13 +139,13 @@ void getList(Program* p, int addr) {
         (p->ptr)++;
         list(p);
         if (!strSame(p->wds[p->ptr], ")")) {
-            error("Expecting a right single-quote for list?");
+            error("Lack a right single-quote for list?");
         }
         (p->ptr)++;
         return;
     }
 
-    error("Expecting a list?");
+    error("Lack a list?");
 }
 
 bool isIO(char* str) {
@@ -113,7 +155,7 @@ bool isIO(char* str) {
     return false;
 }
 
-void io(Program* p) {
+void ioFun(Program* p) {
     // set a variable
     if (strSame(p->wds[p->ptr], "SET")) {
         (p->ptr)++;
@@ -130,11 +172,27 @@ void io(Program* p) {
     }
 }
 
+bool isIfFun(char* str) {
+    return strSame(str, "IF");
+}
+
+void ifFun() {
+
+}
+
+bool isLoopFun(char* str) {
+    return strSame(str, "WHILE");
+}
+
+void loopFun() {
+
+}
+
 // Check if a letter is a valid variable. If so, return the address of 
 // the variable in the variable array
 int var(Program* p) {
     if ((p->wds[p->ptr])[0] > 'Z' || (p->wds[p->ptr])[0] < 'A') {
-        error("Expecting a variable?");
+        error("Lack a variable?");
     }
 
     int addr = p->wds[p->ptr][0] - 'A';
@@ -142,10 +200,14 @@ int var(Program* p) {
     return addr;
 }
 
+void string(Program* p) {
+    
+}
+
 void literal(Program* p) {
     // check the right single-quote
     if (p->wds[p->ptr][strlen(p->wds[p->ptr]) - 1] != '\'') {
-        error("Expecting a right single-quote for literal list?");
+        error("Lack a right single-quote for literal list?");
     }
 
     // check if the literal list is valid 
