@@ -4,14 +4,28 @@
 lisp* lisps[VARNUM];
 #endif
 
-// int main(int argc, char const *argv[]) {
-int main() {
+int main(int argc, char const *argv[]) {
     test();
 
     // Program* program = NULL;
     // program = (Program*)ncalloc(1, sizeof(Program));
 
     return 0;
+}
+
+void getTokens(const char* fileName) {
+    FILE* fp = fopen(fileName, "r");
+    char tokens[MAXNUMTOKENS][MAXTOKENSIZE];
+    char buffer[BUFLEN];
+    while (fgets(buffer, BUFLEN, fp)) {
+        
+        /* code */
+    }
+    
+    // for (int i = 0; i < MAXNUMTOKENS; i++) {
+        
+    // }
+    
 }
 
 void prog(Program* p) {
@@ -192,7 +206,11 @@ void loopFun() {
 // the variable in the variable array
 int var(Program* p) {
     if ((p->wds[p->ptr])[0] > 'Z' || (p->wds[p->ptr])[0] < 'A') {
-        error("Lack a variable?");
+        error("Expect a letter as variable?");
+    }
+
+    if (strlen(p->wds[p->ptr]) != VARLEN) {
+        error("Length of a variable is too long?");
     }
 
     int addr = p->wds[p->ptr][0] - 'A';
@@ -201,7 +219,11 @@ int var(Program* p) {
 }
 
 void string(Program* p) {
-    
+    if (p->wds[p->ptr][strlen(p->wds[p->ptr]) - 1] != '\"') {
+        error("Expect a string?");
+    }
+
+    (p->ptr)++;
 }
 
 void literal(Program* p) {

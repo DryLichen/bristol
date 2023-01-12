@@ -3,7 +3,9 @@
 
 #define MAXNUMTOKENS 1000
 #define MAXTOKENSIZE 100
+#define BUFLEN 256
 #define VARNUM 26
+#define VARLEN 1
 #define DEFADDR -1
 
 typedef struct program {
