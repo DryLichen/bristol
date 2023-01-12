@@ -7,25 +7,68 @@ lisp* lisps[VARNUM];
 int main(int argc, char const *argv[]) {
     test();
 
-    // Program* program = NULL;
-    // program = (Program*)ncalloc(1, sizeof(Program));
+    if (argc != 2) {
+        error("Wrong amount of parameters?");
+    }
+    FILE* fp = fopen(argv[1], "r");
+    if (fp == NULL) {
+        error("Can't open file?");
+    }
 
+    Program* program = getTokens(fp);
+    prog(program);
+
+    fclose(fp);
+    free(program);
     return 0;
 }
 
-void getTokens(const char* fileName) {
-    FILE* fp = fopen(fileName, "r");
-    char tokens[MAXNUMTOKENS][MAXTOKENSIZE];
+Program* getTokens(FILE* fp) {
+    Program* program = NULL;
+    program = (Program*)ncalloc(1, sizeof(Program));
+    program->ptr = 0;
+
     char buffer[BUFLEN];
-    while (fgets(buffer, BUFLEN, fp)) {
-        
-        /* code */
+    int count = 0;
+    int wordPtr = 0;
+    bool flag;
+    while (fgets(buffer, BUFLEN, fp) != NULL) {
+        for (int i = 0; i < (int)strlen(buffer); i++, wordPtr = 0, flag = false) {
+            // bracket
+            if (buffer[i] == '(' || buffer[i] == ')') {
+                program->wds[count][wordPtr++] = buffer[i];
+                flag = true;
+            }
+            
+            // word
+            if (isalpha(buffer[i])) {
+                while (isalpha(buffer[i])) {
+                    program->wds[count][wordPtr++] = buffer[i++];
+                }
+                i--;
+                flag = true;
+            }
+
+            // string or list
+            if (buffer[i] == '\"' || buffer[i] == '\'') {
+                char c = buffer[i];
+                program->wds[count][wordPtr++] = buffer[i++];
+                while (buffer[i] != c) {
+                    program->wds[count][wordPtr++] = buffer[i++];
+                }
+                program->wds[count][wordPtr++] = buffer[i];
+                flag = true;
+            }
+
+            // tail process
+            if (flag) {
+                program->wds[count][wordPtr] = '\0';
+                count++;
+            }
+        }
     }
     
-    // for (int i = 0; i < MAXNUMTOKENS; i++) {
-        
-    // }
-    
+    return program;
 }
 
 void prog(Program* p) {

@@ -1,6 +1,7 @@
 {
     "files.associations": {
         "lisp.h": "c",
-        "general.h": "c"
+        "general.h": "c",
+        "nuclei.h": "c"
     }
 }

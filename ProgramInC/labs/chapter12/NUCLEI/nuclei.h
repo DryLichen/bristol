@@ -13,6 +13,7 @@ typedef struct program {
     int ptr;
 } Program;
 
+Program* getTokens(FILE* fp);
 void prog(Program* p);
 void instrcts(Program* p);
 void instrct(Program* p);
