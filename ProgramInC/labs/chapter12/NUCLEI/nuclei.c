@@ -17,6 +17,7 @@ int main(int argc, char const *argv[]) {
 
     Program* program = getTokens(fp);
     prog(program);
+    printf("Parsed OK!\n");
 
     fclose(fp);
     free(program);
@@ -33,37 +34,39 @@ Program* getTokens(FILE* fp) {
     int wordPtr = 0;
     bool flag;
     while (fgets(buffer, BUFLEN, fp) != NULL) {
-        for (int i = 0; i < (int)strlen(buffer); i++, wordPtr = 0, flag = false) {
-            // bracket
-            if (buffer[i] == '(' || buffer[i] == ')') {
-                program->wds[count][wordPtr++] = buffer[i];
-                flag = true;
-            }
-            
-            // word
-            if (isalpha(buffer[i])) {
-                while (isalpha(buffer[i])) {
-                    program->wds[count][wordPtr++] = buffer[i++];
+        if (buffer[0] != '#') {
+            for (int i = 0; i < (int)strlen(buffer); i++, wordPtr = 0, flag = false) {
+                // bracket
+                if (buffer[i] == '(' || buffer[i] == ')') {
+                    program->wds[count][wordPtr++] = buffer[i];
+                    flag = true;
                 }
-                i--;
-                flag = true;
-            }
-
-            // string or list
-            if (buffer[i] == '\"' || buffer[i] == '\'') {
-                char c = buffer[i];
-                program->wds[count][wordPtr++] = buffer[i++];
-                while (buffer[i] != c) {
-                    program->wds[count][wordPtr++] = buffer[i++];
+                
+                // word
+                if (isalpha(buffer[i])) {
+                    while (isalpha(buffer[i])) {
+                        program->wds[count][wordPtr++] = buffer[i++];
+                    }
+                    i--;
+                    flag = true;
                 }
-                program->wds[count][wordPtr++] = buffer[i];
-                flag = true;
-            }
 
-            // tail process
-            if (flag) {
-                program->wds[count][wordPtr] = '\0';
-                count++;
+                // string or list
+                if (buffer[i] == '\"' || buffer[i] == '\'') {
+                    char c = buffer[i];
+                    program->wds[count][wordPtr++] = buffer[i++];
+                    while (buffer[i] != c) {
+                        program->wds[count][wordPtr++] = buffer[i++];
+                    }
+                    program->wds[count][wordPtr++] = buffer[i];
+                    flag = true;
+                }
+
+                // tail process
+                if (flag) {
+                    program->wds[count][wordPtr] = '\0';
+                    count++;
+                }
             }
         }
     }
@@ -81,6 +84,7 @@ void prog(Program* p) {
 
 void instrcts(Program* p) {
     if (strSame(p->wds[p->ptr], ")")) {
+        (p->ptr)++;
         return;
     }
     instrct(p);
@@ -100,7 +104,7 @@ void instrct(Program* p) {
     } else if (isIfFun(p->wds[p->ptr])) {
         ifFun(p);
     } else if (isLoopFun(p->wds[p->ptr])) {
-        isLoopFun(p);
+        loopFun(p);
     } else {
         error("Lack a function?");  
     }
@@ -112,28 +116,19 @@ void instrct(Program* p) {
 }
 
 bool isRetFun(char* str) {
-    if (isListFun(str) || isIntFun(str) || isBoolFun(str)) {
-        return true;
-    }
-    return false;
+    return isListFun(str) || isIntFun(str) || isBoolFun(str);
 }
 
 bool isListFun(char* str) {
-    if (strSame(str, "CAR") || strSame(str, "CDR") || strSame(str, "CONS")) {
-        return true;
-    }
+    return strSame(str, "CAR") || strSame(str, "CDR") || strSame(str, "CONS");
 }
 
 bool isIntFun(char* str) {
-    if(strSame(str, "PLUS") || strSame(str, "LENGTH")) {
-        return true;
-    }
+    return strSame(str, "PLUS") || strSame(str, "LENGTH");
 }
 
 bool isBoolFun(char* str) {
-    if (strSame(str, "LESS") || strSame(str, "GREATER") || strSame(str, "EQUAL")) {
-        return true;
-    }
+    return strSame(str, "LESS") || strSame(str, "GREATER") || strSame(str, "EQUAL");
 }
 
 void retFun(Program* p) {
@@ -151,50 +146,109 @@ void retFun(Program* p) {
 void listFun(Program* p) {
     if (strSame(p->wds[p->ptr], "CAR")) {
         (p->ptr)++;
-        getList(p, DEFADDR);
+        // getList(p, DEFADDR);
+        getList(p);
         return;
     } 
+
     if (strSame(p->wds[p->ptr], "CDR")) {
         (p->ptr)++;
-        getList(p, DEFADDR);
+        // getList(p, DEFADDR);
+        getList(p);
         return;
     } 
+
     if (strSame(p->wds[p->ptr], "CONS")) {
         (p->ptr)++;
-        getList(p, DEFADDR);
-        getList(p, DEFADDR);
+        // getList(p, DEFADDR);
+        // getList(p, DEFADDR);
+        getList(p);
+        getList(p);
         return;
     }
     
     error("Lack a list function?");
 }
 
-void intFun() {
+void intFun(Program* p) {
+    if (strSame(p->wds[p->ptr], "PLUS")) {
+        (p->ptr)++;
+        // getList(p, DEFADDR);
+        // getList(p, DEFADDR);
+        getList(p);
+        getList(p);
+        return;
+    }
 
+    if (strSame(p->wds[p->ptr], "LENGTH")) {
+        (p->ptr)++;
+        // getList(p, DEFADDR);
+        getList(p);
+        return;
+    }
+
+    error("Lack a int function?");
 }
 
-void boolFun() {
+void boolFun(Program* p) {
+    if (strSame(p->wds[p->ptr], "LESS")) {
+        (p->ptr)++;
+        // getList(p, DEFADDR);
+        // getList(p, DEFADDR);
+        getList(p);
+        getList(p);
+        return;
+    }
+    
+    if (strSame(p->wds[p->ptr], "GREATER")) {
+        (p->ptr)++;
+        // getList(p, DEFADDR);
+        // getList(p, DEFADDR);
+        getList(p);
+        getList(p);
+        return;
+    }
+    
+    if (strSame(p->wds[p->ptr], "EQUAL")) {
+        (p->ptr)++;
+        // getList(p, DEFADDR);
+        // getList(p, DEFADDR);
+        getList(p);
+        getList(p);
+        return;
+    }
 
+    error("Lack a bool fnution?");
 }
 
 // set the variable referred by addr
 // if addr = -1, no need to set variables
-void getList(Program* p, int addr) {
-    if (addr == -1) {
 
+// void getList(Program* p, int addr) {
+
+void getList(Program* p) {
+    // if (addr == -1) {
+        
+    // }
+
+    if (strSame(p->wds[p->ptr], "NIL")) {
+        (p->ptr)++;
+        return;
+    }
+
+    if (isalpha(p->wds[p->ptr][0])) {
+        var(p);
+        return;
     }
 
     if (p->wds[p->ptr][0] == '\'') {
         literal(p);
         return;
     }
-    if (strSame(p->wds[p->ptr], "NIL")) {
-        (p->ptr)++;
-        return;
-    }
+
     if (strSame(p->wds[p->ptr], "(")) {
         (p->ptr)++;
-        list(p);
+        retFun(p);
         if (!strSame(p->wds[p->ptr], ")")) {
             error("Lack a right single-quote for list?");
         }
@@ -205,26 +259,38 @@ void getList(Program* p, int addr) {
     error("Lack a list?");
 }
 
-bool isIO(char* str) {
-    if (strSame(str, "SET") || strSame(str, "PRINT")) {
-        return true;
-    }
-    return false;
+bool isIOFun(char* str) {
+    return strSame(str, "SET") || strSame(str, "PRINT");
 }
 
 void ioFun(Program* p) {
-    // set a variable
     if (strSame(p->wds[p->ptr], "SET")) {
         (p->ptr)++;
-        int addr = var(p);
-        getList(p, addr);
+        setFun(p);
         return;
     }
 
-    // print a variable 
     if (strSame(p->wds[p->ptr], "PRINT")) {
         (p->ptr)++;
-        var(p);
+        printFun(p);
+        return;
+    }
+}
+
+// set a variable
+void setFun(Program* p) {
+    var(p);
+    getList(p);
+    return;
+}
+
+// print a variable 
+void printFun(Program* p) {
+    if (p->wds[p->ptr][0] == '\"') {
+        string(p);
+        return;
+    } else {
+        getList(p);
         return;
     }
 }
@@ -233,32 +299,77 @@ bool isIfFun(char* str) {
     return strSame(str, "IF");
 }
 
-void ifFun() {
+void ifFun(Program* p) {
+    (p->ptr)++;
 
+    if (!strSame(p->wds[p->ptr], "(")) {
+        error("Lack a left bracket in if funtion?");
+    }
+    (p->ptr)++;
+
+    boolFun(p);
+
+    if (!strSame(p->wds[p->ptr], ")")) {
+        error("Lack a right bracket in if funtion?");
+    }
+    (p->ptr)++;
+
+    if (!strSame(p->wds[p->ptr], "(")) {
+        error("Lack a left bracket in if funtion?");
+    }
+    (p->ptr)++;
+
+    instrcts(p);
+
+    if (!strSame(p->wds[p->ptr], "(")) {
+        error("Lack a left bracket in if funtion?");
+    }
+    (p->ptr)++;
+
+    instrcts(p);
 }
 
 bool isLoopFun(char* str) {
     return strSame(str, "WHILE");
 }
 
-void loopFun() {
+void loopFun(Program* p) {
+    (p->ptr)++;
 
+    if (!strSame(p->wds[p->ptr], "(")) {
+        error("Lack a left bracket?");
+    }
+    (p->ptr)++;
+
+    boolFun(p);
+
+    if (!strSame(p->wds[p->ptr], ")")) {
+        error("Lack a right bracket?");
+    }
+    (p->ptr)++;
+
+    if (!strSame(p->wds[p->ptr], "(")) {
+        error("Lack a left bracket?");
+    }
+    (p->ptr)++;
+
+    instrcts(p);
 }
 
-// Check if a letter is a valid variable. If so, return the address of 
-// the variable in the variable array
-int var(Program* p) {
-    if ((p->wds[p->ptr])[0] > 'Z' || (p->wds[p->ptr])[0] < 'A') {
-        error("Expect a letter as variable?");
-    }
-
+// Check if a letter is a valid variable. 
+// If so, return the address of the variable in the variable array
+void var(Program* p) {
     if (strlen(p->wds[p->ptr]) != VARLEN) {
-        error("Length of a variable is too long?");
+        error("Length of the variable is too long?");
     }
 
-    int addr = p->wds[p->ptr][0] - 'A';
+    if ((p->wds[p->ptr])[0] > 'Z' || (p->wds[p->ptr])[0] < 'A') {
+        error("Expect a alphabet letter?");
+    }
+
     (p->ptr)++;
-    return addr;
+    // int addr = p->wds[p->ptr][0] - 'A';
+    // return addr;
 }
 
 void string(Program* p) {
@@ -274,6 +385,7 @@ void literal(Program* p) {
     if (p->wds[p->ptr][strlen(p->wds[p->ptr]) - 1] != '\'') {
         error("Lack a right single-quote for literal list?");
     }
+    (p->ptr)++;
 
     // check if the literal list is valid 
     #ifdef INTERP
@@ -303,13 +415,13 @@ void error(char* str) {
 }
 
 void test() {
-    char wds[MAXNUMTOKENS][MAXTOKENSIZE] = {"(", "(", "SET", "A", "'1'", ")", "(", "PRINT", "A", ")", ")"};
-    Program p;
-    p.ptr = 0;
-    for (int i = 0; i < MAXNUMTOKENS; i++) {
-        strcpy(p.wds[i], wds[i]);
-    }
+    // char wds[MAXNUMTOKENS][MAXTOKENSIZE] = {"(", "(", "SET", "A", "'1'", ")", "(", "PRINT", "A", ")", ")"};
+    // Program p;
+    // p.ptr = 0;
+    // for (int i = 0; i < MAXNUMTOKENS; i++) {
+    //     strcpy(p.wds[i], wds[i]);
+    // }
     
-    prog(&p);
-    fprintf(stdout, "Parsed OK!");
+    // prog(&p);
+    // fprintf(stdout, "Parsed OK!");
 }
