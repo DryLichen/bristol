@@ -7,13 +7,10 @@
 
 <FUNC>     ::= <RETFUNC> | <IOFUNC> | <IF> | <LOOP>
 
-# Return list
+# Return a value, can be list or bool or int
 <RETFUNC>  ::= <LISTFUNC> | <INTFUNC> | <BOOLFUNC>
-
 <LISTFUNC> ::= "CAR" <LIST> | "CDR" <LIST> | "CONS" <LIST> <LIST>
-
 <INTFUNC>  ::= "PLUS" <LIST> <LIST> | "LENGTH" <LIST>
-
 <BOOLFUNC> ::= "LESS" <LIST> <LIST> | "GREATER" <LIST> <LIST> | "EQUAL" <LIST> <LIST>
 
 # IO
