@@ -1,5 +1,5 @@
 #include "lisp.h"
-#include "specific.h"
+#include "nuclei.h"
 
 // Returns element 'a' - this is not a list, and
 // by itelf would be printed as e.g. "3", and not "(3)"
@@ -138,8 +138,8 @@ void toStringHelper(const lisp* l, char* str, int* ptr) {
 
     // write atoms
     if (lisp_isatomic(l)) {
-        // if the last char is a digit or a right bracket, insert a space
-        if (isSpace(str, ptr)) {
+        // insert a space if the last char is a digit or a right bracket
+        if (insertSpace(str, ptr)) {
             writeChar(str, ptr, ' ');
         }
         char tmp[STRLEN];
@@ -150,9 +150,9 @@ void toStringHelper(const lisp* l, char* str, int* ptr) {
     }
 
     // write left brackets 
-    if (isBracket(l)) {
-        // a space should be insert when the last char is a digit
-        if (isSpace(str, ptr)) {
+    if (insertBracket(l)) {
+        // insert a space when the last char is a digit or a right bracket
+        if (insertSpace(str, ptr)) {
             writeChar(str, ptr, ' ');
         }
         writeChar(str, ptr, '(');
@@ -183,7 +183,7 @@ bool lisp_isatomic(const lisp* l) {
 
 // return true when the next char should be a left bracket
 // a left bracket is needed when a child node is detected
-bool isBracket(const lisp* l) {
+bool insertBracket(const lisp* l) {
     if (l == NULL) {
         return false;
     }
@@ -196,8 +196,8 @@ bool isBracket(const lisp* l) {
 }
 
 // return true when the next char should be space
-// a space should be inserted between two digit or a digit and a right bracket
-bool isSpace(char* str, int *ptr) {
+// a space should be inserted between two digit or a right bracket and a digit 
+bool insertSpace(char* str, int *ptr) {
     char c = *(str + *ptr);
     if (isdigit(c) || c == ')') {
         return true;
@@ -219,6 +219,30 @@ void lisp_free(lisp** l) {
     *l = NULL;
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 /* ------------- Tougher Ones : Extensions ---------------*/
 
 // Builds a new list based on the string 'str'
@@ -227,23 +251,38 @@ lisp* lisp_fromstring(const char* str) {
     if (strcmp(str, "()") == 0) {
         return NULL;
     }
+    
+    // process string
+    invalidChar(str);
+
+    char spaceBuff[STRLEN];
+    memset(spaceBuff, '\0', STRLEN);
+    noRowSpace(str, spaceBuff);
+
+    char buff[STRLEN];
+    processStr(spaceBuff, buff);
+
+    // check if the literal lisp is valid
+    if (!isValid(buff)) {
+        error("False format of literal lisp?");
+    }
 
     // leaf case
-    if (isdigit(*str) || *str == '-') {
+    if (isdigit(*buff) || *buff == '-') {
         int tmp;
-        assert(sscanf(str, "%d", &tmp) == 1);
+        assert(sscanf(buff, "%d", &tmp) == 1);
         return lisp_atom(tmp);
     }
 
-    // general cases
+    // general case
     lisp* l = lisp_atom(DEFAULT);
     int ptr = 1;
-    fromStringHelper(l, str, &ptr);
+    fromStringHelper(l, buff, &ptr);
 
     return l;
 }
 
-void fromStringHelper(lisp* l, const char* str, int* ptr) {
+void fromStringHelper(lisp* l, char* str, int* ptr) {
     if (*ptr == (int)strlen(str)) {
         return;
     }
@@ -279,8 +318,141 @@ void fromStringHelper(lisp* l, const char* str, int* ptr) {
     }
 }
 
+// check if there are invalid characters in string
+void invalidChar(const char* str) {
+    for (int i = 0; i < (int)strlen(str); i++) {
+        bool flag = false;
+        char c = str[i];
+        
+        if (isdigit(c)) {
+            flag = true;
+        }
+        if (c == '-') {
+            flag = true;
+        }
+        if (c == ' ') {
+            flag = true;
+        }
+        if (c == '(' || c == ')') {
+            flag = true;
+        }
 
-// return the number of digits, including the negatie sign
+        if (!flag) {
+            error("Illegal character in literal lisp?");
+        }
+    }
+}
+
+// delete redundant row spaces and just keep one space
+void noRowSpace(const char* originStr, char* buff) {
+    char str[STRLEN];
+    strcpy(str, originStr);
+    char tmp[STRLEN][STRLEN];
+    int count = 0;
+
+    char *p = strtok(str, " ");
+    while (p != NULL) {
+        strcpy(tmp[count], p);
+        tmp[count][strlen(tmp[count]) + 1] = '\0';
+        tmp[count][strlen(tmp[count])] = ' ';
+        count++;
+        p = strtok(NULL, " ");
+    }
+
+    // concatenate characters
+    for (int i = 0; i < count; i++) {
+        strcat(buff, tmp[i]);
+    }
+    
+    // delete the final space
+    buff[strlen(buff) - 1] = '\0';
+    if (buff[strlen(buff) - 1] == ' ') {
+        buff[strlen(buff) - 1] = '\0';
+    }
+}
+
+// process string to get a standard string
+void processStr(char* str, char* buff) {
+    int buffPtr = 0;
+    int length = strlen(str);
+    for (int i = 0; i < length; i++) {
+        // 1. space rules after digits
+        if (isdigit(str[i])) {
+            buff[buffPtr++] = str[i];
+            // space between a digit and a left bracket
+            if (i + 1 < length && str[i + 1] == '(') {
+                buff[buffPtr++] = ' ';
+            } else if (i + 1 < length && str[i + 1] == '-') {
+                error("Negative sign should not be after a digit?");
+            }
+        }
+
+        // 2. space rules after left brackets
+        if (str[i] == '(') {
+            if (i + 1 < length && str[i + 1] == ' ') {
+                buff[buffPtr++] = str[i++];
+            } else {
+                buff[buffPtr++] = str[i];
+            }
+        }
+
+        // 3. space rules after right brackets
+        if (str[i] == ')') {
+            buff[buffPtr++] = str[i];
+            if (i + 1 < length && str[i + 1] == '(') {
+                buff[buffPtr++] = ' ';
+            } else if (i + 1 < length && isdigit(str[i + 1])) {
+                buff[buffPtr++] = ' ';
+            } else if (i + 1 < length && str[i + 1] == '-') {
+                buff[buffPtr++] = ' ';
+            }
+        }
+
+        // 4. space rules after negative sign
+        if (str[i] == '-') {
+            if (i + 1 < length && !isdigit(str[i + 1])) {
+                error("Expect digits after negative sign?");
+            }
+            buff[buffPtr++] = str[i];
+        }
+
+        // 5. space rules after space
+        if (str[i] == ' ') {
+            if (i + 1 < length && str[i + 1] != ')') {
+                buff[buffPtr++] = str[i];
+            }
+        }
+    }
+    buff[buffPtr] = '\0';
+}
+
+// check if a processed literal lisp is valid
+bool isValid(char* str) {
+    // the number of ( and ) should be equal
+    int countL = 0, countR = 0;
+    for (int i = 0; i < (int)strlen(str); i++) {
+        if (str[i] == '(') {
+            countL++;
+        }
+        if (str[i] == ')') {
+            countR++;
+        }
+    }
+    if (countL != countR) {
+        return false;
+    }
+
+    // not leaf case
+    if (countL != 0) {
+        if (str[0] != '(' || str[strlen(str) - 1] != ')') {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+// return the number of digits, including the negative sign
 int getNumLen(int num) {
     int count = (num <= 0) ? 1 : 0;
 
@@ -383,10 +555,10 @@ void test() {
     int ptr = 0;
     writeChar(str, &ptr, 'c');
     assert(*str == 'a' && str[ptr] == 'c');
-    // tests for isBracket and isSpace
+    // tests for insertBracket and insertSpace
     assert(lisp_cdr(l2));
     ptr = 2;
-    assert(isSpace(str, &ptr));
+    assert(insertSpace(str, &ptr));
 
     // tests for toString
     lisp_tostring(l1, str);

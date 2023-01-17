@@ -12,9 +12,13 @@ struct lisp {
 
 void copyHelper(lisp* copyLisp, const lisp* l);
 void toStringHelper(const lisp* l, char* str, int* ptr);
-bool isBracket(const lisp* l);
-bool isSpace(char* str, int *ptr);
+bool insertBracket(const lisp* l);
+bool insertSpace(char* str, int *ptr);
 void writeChar(char* str, int* ptr, char c);
-void fromStringHelper(lisp* l, const char* str, int* ptr);
+void invalidChar(const char* str);
+void noRowSpace(const char* str, char* buff);
+void processStr(char* str, char* buff);
+bool isValid(char* str);
+void fromStringHelper(lisp* l, char* str, int* ptr);
 int getNumLen(int num);
 void test();

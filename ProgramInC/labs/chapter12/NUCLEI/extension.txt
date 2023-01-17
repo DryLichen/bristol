@@ -1,1 +1,2 @@
 commet: #
+tolerance of nonstandard literal lisp

@@ -188,9 +188,13 @@ void listFun(Program* p) {
 
         #ifdef INTERP
             int addr = getList(p);
+            // in case the variable is uninitialized
+            if (!isInit(addr)) {
+                error("Variable should be initialized before use?");
+            }
             // in case there is a bool in the variable
             if (!isLisp(addr)) {
-                error("Expect a lisp structure?");
+                error("Expect a lisp structure for car function?");
             }
 
             int carAddr = idleChild();
@@ -207,9 +211,13 @@ void listFun(Program* p) {
 
         #ifdef INTERP
             int addr = getList(p);
+            // in case the variable is uninitialized
+            if (!isInit(addr)) {
+                error("Variable should be initialized before use?");
+            }
             // in case there is a bool in the variable
             if (!isLisp(addr)) {
-                error("Expect a lisp structure?");
+                error("Expect a lisp structure for cdr function?");
             }
 
             int cdrAddr = idleChild();
@@ -227,9 +235,13 @@ void listFun(Program* p) {
         #ifdef INTERP
             int addr1 = getList(p);
             int addr2 = getList(p);
+            // in case the variable is uninitialized
+            if (!isInit(addr1) || !isInit(addr2)) {
+                error("Variable should be initialized before use?");
+            }
             // in case there is a bool in the variable
             if (!isLisp(addr1) || !isLisp(addr2)) {
-                error("Expect a lisp structure?");
+                error("Expect a lisp structure for cons function?");
             }
 
             int consAddr = idleMoth();
@@ -281,9 +293,13 @@ void intFun(Program* p) {
 
         #ifdef INTERP
             int addr = getList(p);
+            // in case the variable is uninitialized
+            if (!isInit(addr)) {
+                error("Variable should be initialized before use?");
+            }
             // check if the operand is lisp
             if (!isLisp(addr)) {
-                error("Expect a lisp structure?");
+                error("Expect a lisp structure for length function?");
             }
 
             int lenAddr = idleTemp();
@@ -302,7 +318,12 @@ void intFun(Program* p) {
 }
 
 #ifdef INTERP
-// if a given variable is not bool, return true
+// if a given variable is initialized, return true
+bool isInit(int addr) {
+    return (int)lisps[addr] != DEFADDR;
+}
+
+// if a given variable is a lisp structure, return true
 bool isLisp(int addr) {
     return (int)lisps[addr] > NONE;
 }
@@ -313,6 +334,11 @@ bool isAtom(int addr) {
         return lisp_isatomic(lisps[addr]);
     }
     return false;
+}
+
+// return true if a variable is bool
+bool isBool(int addr) {
+    return (int)lisps[addr] == TRUE || (int)lisps[addr] == FALSE;
 }
 #endif
 
@@ -569,10 +595,6 @@ void printFun(Program* p) {
             getList(p);
         #endif
     }
-}
-
-bool isBool(int addr) {
-    return addr == TRUE || addr == FALSE;
 }
 
 bool isIfFun(char* str) {

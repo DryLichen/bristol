@@ -5,7 +5,12 @@ lisp* lisps[4]= {-1};
 
 int main(int argc, char const *argv[])
 {
-    for (int i = 0; i < 4; i++) {
-        printf("%d", lisps[i]);
+    char str[100] = "((12  33 4) ";
+    char buff[200];
+    char *p = strtok(str, " ");
+    while (p != NULL) {
+        
+        p = strtok(NULL, " ");
     }
+    
 }
