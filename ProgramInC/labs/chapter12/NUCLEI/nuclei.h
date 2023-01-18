@@ -4,16 +4,16 @@
 #define MAXNUMTOKENS 1000
 #define MAXTOKENSIZE 100
 #define BUFLEN 256
-// 26 alpha + 174 temporary variable + 100 child variable + 100 mother variable
-#define VARNUM 400
+// 26 alphabet + 74 temporary
+#define VARNUM 100
 #define TEMPSTART 26
-#define CHILDSTART 200
-#define MOTHSTART 300
 #define VARLEN 1
 #define NONE -1
 #define DEFADDR -2
 #define TRUE -3
 #define FALSE -4
+
+// #define INTERP
 
 typedef struct program {
     char wds[MAXNUMTOKENS][MAXTOKENSIZE];

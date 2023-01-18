@@ -27,8 +27,6 @@ parse_s: nuclei.c general.c nuclei.h
 parse_v: nuclei.c general.c nuclei.h
 	$(CC) nuclei.c general.c $(VALG) -o parse_v $(LIBS)
 
-all: parse parse_s parse_v interp interp_s interp_v
-
 interp: nuclei.c linked.c general.c nuclei.h lisp.h general.h
 	$(CC) nuclei.c linked.c general.c $(RELEASE) -DINTERP -o interp $(LIBS)
 
@@ -37,6 +35,19 @@ interp_s: nuclei.c linked.c general.c nuclei.h lisp.h general.h
 
 interp_v: nuclei.c linked.c general.c nuclei.h lisp.h general.h
 	$(CC) nuclei.c linked.c general.c $(VALG) -DINTERP -o interp_v $(LIBS)
+
+extension: nuclei.c linked.c general.c nuclei.h lisp.h general.h
+	$(CC) nuclei.c linked.c general.c $(RELEASE) -DEXTENS -o interp $(LIBS)
+
+extension_s: nuclei.c linked.c general.c nuclei.h lisp.h general.h
+	$(CC) nuclei.c linked.c general.c $(SANI) -DEXTENS -o interp_s $(LIBS)
+
+extension_v: nuclei.c linked.c general.c nuclei.h lisp.h general.h
+	$(CC) nuclei.c linked.c general.c $(VALG) -DEXTENS -o interp_v $(LIBS)
+
+
+all: parse parse_s parse_v interp interp_s interp_v
+
 
 # For all .ncl files, run them and output result to a .pres (parsed result) 
 # or .ires (interpretted result) file.

@@ -1,0 +1,5 @@
+Basically, testNuclei() is used to test this program.
+
+1. lisp_fromstring: Tests for this function is
+
+2. 

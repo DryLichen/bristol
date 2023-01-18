@@ -4,8 +4,10 @@
 lisp* lisps[VARNUM];
 #endif
 
+Program* program = NULL;
+
 int main(int argc, char const *argv[]) {
-    void testNuclei();
+    // testNuclei();
 
     if (argc != 2) {
         error("Wrong amount of parameters?");
@@ -19,14 +21,15 @@ int main(int argc, char const *argv[]) {
         initLisps();
     #endif
 
-    Program* program = getTokens(fp);
+    program = getTokens(fp);
     prog(program);
 
-    #ifndef INTERP
+    #ifdef INTERP
+        freeSpace();
+    #else
         printf("Parsed OK\n");
     #endif
 
-    fclose(fp);
     free(program);
     return 0;
 }
@@ -86,7 +89,8 @@ Program* getTokens(FILE* fp) {
             }
         }
     }
-    
+
+    fclose(fp);
     return program;
 }
 
@@ -177,7 +181,7 @@ void retFun(Program* p) {
 }
 #endif
 
-// return the address of a lisp
+// return the address of a lisp strucutr
 #ifdef INTERP
 int listFun(Program* p) {
 #else
@@ -197,8 +201,8 @@ void listFun(Program* p) {
                 error("Expect a lisp structure for car function?");
             }
 
-            int carAddr = idleChild();
-            lisps[carAddr] = lisp_car(lisps[addr]);
+            int carAddr = idleTemp();
+            lisps[carAddr] = lisp_copy(lisp_car(lisps[addr]));
             return carAddr;
         #else
             getList(p);
@@ -220,8 +224,8 @@ void listFun(Program* p) {
                 error("Expect a lisp structure for cdr function?");
             }
 
-            int cdrAddr = idleChild();
-            lisps[cdrAddr] = lisp_cdr(lisps[addr]);
+            int cdrAddr = idleTemp();
+            lisps[cdrAddr] = lisp_copy(lisp_cdr(lisps[addr]));
             return cdrAddr;
         #else
             getList(p);
@@ -244,8 +248,11 @@ void listFun(Program* p) {
                 error("Expect a lisp structure for cons function?");
             }
 
-            int consAddr = idleMoth();
-            lisps[consAddr] = lisp_cons(lisps[addr1], lisps[addr2]);
+            int consAddr = idleTemp();
+            lisp* l = lisp_cons(lisps[addr1], lisps[addr2]);
+            lisps[consAddr] = lisp_copy(l);
+            free(l);
+            l = NULL;
             return consAddr;
         #else
             getList(p);
@@ -272,6 +279,10 @@ void intFun(Program* p) {
         #ifdef INTERP
             int addr1 = getList(p);
             int addr2 = getList(p);
+            // in case the variable is uninitialized
+            if (!isInit(addr1) || !isInit(addr2)) {
+                error("Variable should be initialized before use?");
+            }
             // check if the operands are atoms
             if (!isAtom(addr1) || !isAtom(addr2)) {
                 error("Expect an atom for plus?");
@@ -317,31 +328,6 @@ void intFun(Program* p) {
     #endif
 }
 
-#ifdef INTERP
-// if a given variable is initialized, return true
-bool isInit(int addr) {
-    return (int)lisps[addr] != DEFADDR;
-}
-
-// if a given variable is a lisp structure, return true
-bool isLisp(int addr) {
-    return (int)lisps[addr] > NONE;
-}
-
-// return true if a given address storing an atom
-bool isAtom(int addr) {
-    if (isLisp(addr)) {
-        return lisp_isatomic(lisps[addr]);
-    }
-    return false;
-}
-
-// return true if a variable is bool
-bool isBool(int addr) {
-    return (int)lisps[addr] == TRUE || (int)lisps[addr] == FALSE;
-}
-#endif
-
 // return a bool value (not in a lisp structure)
 #ifdef INTERP
 int boolFun(Program* p) {
@@ -354,6 +340,10 @@ void boolFun(Program* p) {
         #ifdef INTERP
             int addr1 = getList(p);
             int addr2 = getList(p);
+            // in case the variable is uninitialized
+            if (!isInit(addr1) || !isInit(addr2)) {
+                error("Variable should be initialized before use?");
+            }
             // check if the operands are atoms
             if (!isAtom(addr1) || !isAtom(addr2)) {
                 error("Expect an atom for bool operation?");
@@ -361,9 +351,9 @@ void boolFun(Program* p) {
             
             int boolAddr = idleTemp();
             if (lisp_getval(lisps[addr1]) < lisp_getval(lisps[addr2])) {
-                lisps[boolAddr] = (lisp *)TRUE;
+                lisps[boolAddr] = (lisp*)TRUE;
             } else {
-                lisps[boolAddr] = (lisp *)FALSE;
+                lisps[boolAddr] = (lisp*)FALSE;
             }
             return boolAddr;
         #else
@@ -379,6 +369,10 @@ void boolFun(Program* p) {
         #ifdef INTERP
             int addr1 = getList(p);
             int addr2 = getList(p);
+            // in case the variable is uninitialized
+            if (!isInit(addr1) || !isInit(addr2)) {
+                error("Variable should be initialized before use?");
+            }
             // check if the operands are atoms
             if (!isAtom(addr1) || !isAtom(addr2)) {
                 error("Expect an atom for bool operation?");
@@ -404,6 +398,10 @@ void boolFun(Program* p) {
         #ifdef INTERP
             int addr1 = getList(p);
             int addr2 = getList(p);
+            // in case the variable is uninitialized
+            if (!isInit(addr1) || !isInit(addr2)) {
+                error("Variable should be initialized before use?");
+            }
             // check if the operands are atoms
             if (!isAtom(addr1) || !isAtom(addr2)) {
                 error("Expect an atom for bool operation?");
@@ -429,13 +427,38 @@ void boolFun(Program* p) {
     #endif
 }
 
+#ifdef INTERP
+// if a given variable is initialized, return true
+bool isInit(int addr) {
+    return (int)lisps[addr] != DEFADDR;
+}
+
+// if a given variable is a lisp structure, return true
+bool isLisp(int addr) {
+    return (int)lisps[addr] > NONE;
+}
+
+// return true if a given address storing an atom
+bool isAtom(int addr) {
+    if (isLisp(addr)) {
+        return lisp_isatomic(lisps[addr]);
+    }
+    return false;
+}
+
+// return true if a variable is bool
+bool isBool(int addr) {
+    return (int)lisps[addr] == TRUE || (int)lisps[addr] == FALSE;
+}
+#endif
+
 // return the address of the processed variable
 #ifdef INTERP
 int getList(Program* p) {
 #else
 void getList(Program* p) {
 #endif
-    // NIL
+    // NIL, return a idle temp variable and set it to NULL
     if (strSame(p->wds[p->ptr], "NIL")) {
         (p->ptr)++;
 
@@ -448,7 +471,7 @@ void getList(Program* p) {
         #endif
     }
 
-    // VAR
+    // VAR, return the location of the alphabet variable 
     if (isalpha(p->wds[p->ptr][0])) {
         #ifdef INTERP
             return var(p);
@@ -458,7 +481,7 @@ void getList(Program* p) {
         #endif
     }
 
-    // literal
+    // literal, return a idle variable storing literal lisp
     if (p->wds[p->ptr][0] == '\'') {
         #ifdef INTERP
             return literal(p);
@@ -468,7 +491,7 @@ void getList(Program* p) {
         #endif
     }
 
-    // return function
+    // call return functions
     if (strSame(p->wds[p->ptr], "(")) {
         (p->ptr)++;
 
@@ -497,40 +520,26 @@ void getList(Program* p) {
 
 #ifdef INTERP
 // find an available temporary variable  
-// if no one is available, report error
+// if no one is available, free variables from the start
 int idleTemp() {
-    for (int i = TEMPSTART; i < CHILDSTART; i++) {
-        if ((int)lisps[i] == DEFADDR) {
-            return i;
-        }
-    }
-    
-    error("No available temporary variables?");
-    return NONE;
-}
+    static int ptr = TEMPSTART;
 
-// find an available child variable  
-// if no one is available, report error
-int idleChild() {
-    for (int i = CHILDSTART; i < MOTHSTART; i++) {
+    for (int i = TEMPSTART; i < VARNUM; i++) {
         if ((int)lisps[i] == DEFADDR) {
             return i;
         }
     }
-    error("No available child variables?");
-    return NONE;
-}
 
-// find an available mother variable
-// if no one is available, report error
-int idleMoth() {
-    for (int i = MOTHSTART; i < VARNUM; i++) {
-        if ((int)lisps[i] == DEFADDR) {
-            return i;
-        }
+    int addr = ptr++;
+    // lisp case, no need to free if it's a bool
+    if (isLisp(addr)) {
+        lisp_free(&lisps[addr]);
     }
-    error("No available mother variables?");
-    return NONE;
+    lisps[addr] = (lisp*)DEFADDR;
+    if (ptr >= VARNUM) {
+        ptr = TEMPSTART;
+    }
+    return addr;
 }
 #endif
 
@@ -538,6 +547,7 @@ bool isIOFun(char* str) {
     return strSame(str, "SET") || strSame(str, "PRINT");
 }
 
+// functions related to IO and variable set
 void ioFun(Program* p) {
     if (strSame(p->wds[p->ptr], "SET")) {
         (p->ptr)++;
@@ -552,12 +562,25 @@ void ioFun(Program* p) {
     }
 }
 
-// set a variable
+// set a alphabet variable with the deep copy of the tmp list
 void setFun(Program* p) {
     #ifdef INTERP
-        int addr = var(p);
-        int temp = getList(p);
-        lisps[addr] = lisps[temp]; 
+        int setAddr = var(p);
+        int addr = getList(p);
+        // if the alphabet variable contains a lisp already, free it
+        if (isLisp(setAddr)) {
+            lisp_free(&lisps[setAddr]);
+        }
+
+        // lisp case
+        if (isLisp(addr)) {
+            lisps[setAddr] = lisp_copy(lisps[addr]);
+        }
+
+        // bool case
+        if (isBool(addr)) {
+            lisps[setAddr] = lisps[addr];
+        }
     #else
         var(p);
         getList(p);
@@ -580,7 +603,7 @@ void printFun(Program* p) {
                 return;
             }
 
-            // check it it's a bool
+            // check if it's a bool
             if ((int)lisps[addr] == TRUE) {
                 printf("TRUE\n");
                 return;
@@ -795,6 +818,8 @@ void string(Program* p) {
     (p->ptr)++;
 }
 
+// return the location of the literal variable
+// find a idle temp variable and set it with the literal lisp
 #ifdef INTERP
 int literal(Program* p) {
 #else
@@ -824,43 +849,40 @@ void literal(Program* p) {
     #endif
 }
 
+// return true if two string is the same
 bool strSame(char* str1, char* str2) {
     return strcmp(str1, str2) == 0 ? true : false;
 }
 
 void error(char* str) {
     fprintf(stderr, "Fatal Error : %s \n", str);
+    #ifdef INTERP
+        freeSpace();
+    #endif
+    free(program);
     exit(EXIT_FAILURE);
 }
 
 #ifdef INTERP
-// free all the variables and temp variables
+// free all the allocated spaces
 void freeSpace() {
-    // free temporary variables
-    for (int i = TEMPSTART; i < CHILDSTART; i++) {
-        if ((int)lisps[i] > 0) {
+    // free all of the variables
+    for (int i = 0; i < VARNUM; i++) {
+        if (isLisp(i)) {
             lisp_free(&lisps[i]);
         }
-    }
-
-    // free the root of mother variables
-    for (int i = CHILDSTART; i < VARNUM; i++) {
-        if ((int)lisps[i] > 0) {
-            free(lisps[i]);
-            lisps[i] = NULL;
-        }
+        lisps[i] = NULL;
     }
 }
 #endif
 
 void testNuclei() {
-    // char wds[MAXNUMTOKENS][MAXTOKENSIZE] = {"(", "(", "SET", "A", "'1'", ")", "(", "PRINT", "A", ")", ")"};
-    // Program p;
-    // p.ptr = 0;
-    // for (int i = 0; i < MAXNUMTOKENS; i++) {
-    //     strcpy(p.wds[i], wds[i]);
-    // }
+    char wds[MAXNUMTOKENS][MAXTOKENSIZE] = {"(", "(", "SET", "A", "'1'", ")", "(", "PRINT", "A", ")", ")"};
+    Program p;
+    p.ptr = 0;
+    for (int i = 0; i < MAXNUMTOKENS; i++) {
+        strcpy(p.wds[i], wds[i]);
+    }
     
-    // prog(&p);
-    // fprintf(stdout, "Parsed OK!");
+    prog(&p);
 }
