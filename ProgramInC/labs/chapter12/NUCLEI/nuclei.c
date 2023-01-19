@@ -7,7 +7,11 @@ lisp* lisps[VARNUM];
 Program* program = NULL;
 
 int main(int argc, char const *argv[]) {
-    // testNuclei();
+    #ifdef INTERP
+        testInterp();
+    #else
+        testParse();
+    #endif
 
     if (argc != 2) {
         error("Wrong amount of parameters?");
@@ -20,12 +24,11 @@ int main(int argc, char const *argv[]) {
     #ifdef INTERP
         initLisps();
     #endif
-
     program = getTokens(fp);
     prog(program);
 
     #ifdef INTERP
-        freeSpace();
+        freeLisps();
     #else
         printf("Parsed OK\n");
     #endif
@@ -35,7 +38,7 @@ int main(int argc, char const *argv[]) {
 }
 
 #ifdef INTERP
-// initialize the variable array
+// initialize the variable array with default address
 void initLisps() {
     for (int i = 0; i < VARNUM; i++) {
         lisps[i] = (lisp*)DEFADDR;
@@ -43,53 +46,48 @@ void initLisps() {
 }
 #endif
 
+// read the file to get all the tokens and store them in program
 Program* getTokens(FILE* fp) {
-    Program* program = NULL;
-    program = (Program*)ncalloc(1, sizeof(Program));
+    Program* program = (Program*)ncalloc(1, sizeof(Program));
     program->ptr = 0;
 
     char buffer[BUFLEN];
-    int count = 0;
-    int wordPtr = 0;
+    int count = 0, wordPtr = 0, len = 0;
     bool flag;
     while (fgets(buffer, BUFLEN, fp) != NULL) {
-        if (buffer[0] != '#') {
-            for (int i = 0; i < (int)strlen(buffer); i++, wordPtr = 0, flag = false) {
-                // bracket
-                if (buffer[i] == '(' || buffer[i] == ')') {
-                    program->wds[count][wordPtr++] = buffer[i];
-                    flag = true;
-                }
-                
-                // word
-                if (isalpha(buffer[i])) {
-                    while (isalpha(buffer[i])) {
-                        program->wds[count][wordPtr++] = buffer[i++];
-                    }
-                    i--;
-                    flag = true;
-                }
-
-                // string or list
-                if (buffer[i] == '\"' || buffer[i] == '\'') {
-                    char c = buffer[i];
+        len = (int)strlen(buffer);
+        for (int i = 0; i < len; i++, wordPtr = 0, flag = false) {
+            // 1. brackets
+            if (buffer[i] == '(' || buffer[i] == ')') {
+                program->wds[count][wordPtr++] = buffer[i];
+                flag = true;
+            } else if (isalpha(buffer[i])) {
+                // 2. words inlucding keywords, NIL and variables
+                while (isalpha(buffer[i])) {
                     program->wds[count][wordPtr++] = buffer[i++];
-                    while (buffer[i] != c) {
-                        program->wds[count][wordPtr++] = buffer[i++];
-                    }
-                    program->wds[count][wordPtr++] = buffer[i];
-                    flag = true;
                 }
+                i--;
+                flag = true;
+            } else if (buffer[i] == '\"' || buffer[i] == '\'') {
+                // 3. string or list
+                char c = buffer[i];
+                program->wds[count][wordPtr++] = buffer[i++];
+                while (buffer[i] != c) {
+                    program->wds[count][wordPtr++] = buffer[i++];
+                }
+                program->wds[count][wordPtr++] = buffer[i];
+                flag = true;
+            } else if (buffer[i] == '#') {
+                // when detecting # indicating comment, skip the rest part
+                i = len - 1;
+            }
 
-                // tail process
-                if (flag) {
-                    program->wds[count][wordPtr] = '\0';
-                    count++;
-                }
+            // tail process, add terminator at the end of a token
+            if (flag) {
+                program->wds[count++][wordPtr] = '\0';
             }
         }
     }
-
     fclose(fp);
     return program;
 }
@@ -102,6 +100,7 @@ void prog(Program* p) {
     instrcts(p);
 }
 
+// process all the lines inside the program
 void instrcts(Program* p) {
     if (strSame(p->wds[p->ptr], ")")) {
         (p->ptr)++;
@@ -111,12 +110,14 @@ void instrcts(Program* p) {
     instrcts(p);
 }
 
+// process only one function, report error when it's not a function 
 void instrct(Program* p) {
     if (!strSame(p->wds[p->ptr], "(")) {
         error("Lack the left bracket for a function?");
     }
     (p->ptr)++;
 
+    // call functions in terms of the prefix
     if (isRetFun(p->wds[p->ptr])) {
         retFun(p);
     } else if (isIOFun(p->wds[p->ptr])) {
@@ -151,37 +152,42 @@ bool isBoolFun(char* str) {
     return strSame(str, "LESS") || strSame(str, "GREATER") || strSame(str, "EQUAL");
 }
 
-// return the address of the variable
+// call return functions in terms of the prefix. Report error if not a return function
+// return the location of the variable in array
 #ifdef INTERP
 int retFun(Program* p) {
-    if (isListFun(p->wds[p->ptr])) {
-        return listFun(p);
-    }
-    if (isIntFun(p->wds[p->ptr])) {
-        return intFun(p);
-    }
-    if (isBoolFun(p->wds[p->ptr])) {
-        return boolFun(p);
-    }
-
-    error("Expect a return fucntion?");
-    return NONE;
-}
 #else
 void retFun(Program* p) {
-    if (isListFun(p->wds[p->ptr])) {
-        listFun(p);
-    }
-    if (isIntFun(p->wds[p->ptr])) {
-        intFun(p);
-    }
-    if (isBoolFun(p->wds[p->ptr])) {
-        boolFun(p);
-    }
-}
 #endif
+    if (isListFun(p->wds[p->ptr])) {
+        #ifdef INTERP
+            return listFun(p);
+        #else
+            listFun(p);
+        #endif
+    } else if (isIntFun(p->wds[p->ptr])) {
+        #ifdef INTERP
+            return intFun(p);
+        #else
+            intFun(p);
+        #endif
+    } else if (isBoolFun(p->wds[p->ptr])) {
+        #ifdef INTERP
+            return boolFun(p);
+        #else
+            boolFun(p);
+        #endif
+    } else {
+        error("Expect a return fucntion?");
+    }
 
-// return the address of a lisp strucutr
+    #ifdef INTERP
+        return NONE;
+    #endif
+}
+
+// check if the format of return list funcion is correct
+// return the location of a lisp structure in array
 #ifdef INTERP
 int listFun(Program* p) {
 #else
@@ -189,17 +195,9 @@ void listFun(Program* p) {
 #endif
     if (strSame(p->wds[p->ptr], "CAR")) {
         (p->ptr)++;
-
         #ifdef INTERP
             int addr = getList(p);
-            // in case the variable is uninitialized
-            if (!isInit(addr)) {
-                error("Variable should be initialized before use?");
-            }
-            // in case there is a bool in the variable
-            if (!isLisp(addr)) {
-                error("Expect a lisp structure for car function?");
-            }
+            listHelper(addr);
 
             int carAddr = idleTemp();
             lisps[carAddr] = lisp_copy(lisp_car(lisps[addr]));
@@ -212,17 +210,9 @@ void listFun(Program* p) {
 
     if (strSame(p->wds[p->ptr], "CDR")) {
         (p->ptr)++;
-
         #ifdef INTERP
             int addr = getList(p);
-            // in case the variable is uninitialized
-            if (!isInit(addr)) {
-                error("Variable should be initialized before use?");
-            }
-            // in case there is a bool in the variable
-            if (!isLisp(addr)) {
-                error("Expect a lisp structure for cdr function?");
-            }
+            listHelper(addr);
 
             int cdrAddr = idleTemp();
             lisps[cdrAddr] = lisp_copy(lisp_cdr(lisps[addr]));
@@ -235,18 +225,11 @@ void listFun(Program* p) {
 
     if (strSame(p->wds[p->ptr], "CONS")) {
         (p->ptr)++;
-
         #ifdef INTERP
             int addr1 = getList(p);
             int addr2 = getList(p);
-            // in case the variable is uninitialized
-            if (!isInit(addr1) || !isInit(addr2)) {
-                error("Variable should be initialized before use?");
-            }
-            // in case there is a bool in the variable
-            if (!isLisp(addr1) || !isLisp(addr2)) {
-                error("Expect a lisp structure for cons function?");
-            }
+            listHelper(addr1);
+            listHelper(addr2);
 
             int consAddr = idleTemp();
             lisp* l = lisp_cons(lisps[addr1], lisps[addr2]);
@@ -267,7 +250,20 @@ void listFun(Program* p) {
     #endif
 }
 
-// return the address of an lisp atom
+#ifdef INTERP
+// check if the variable is uninitialized or it's a bool
+void listHelper(int addr) {
+    if (!isInit(addr)) {
+        error("Variable should be initialized before use?");
+    }
+    if (!isLisp(addr)) {
+        error("Expect a lisp structure for cdr function?");
+    }
+}
+#endif
+
+// check if the format of return int funcion is correct
+// return the location of a lisp atom in array
 #ifdef INTERP
 int intFun(Program* p) {
 #else
@@ -279,14 +275,8 @@ void intFun(Program* p) {
         #ifdef INTERP
             int addr1 = getList(p);
             int addr2 = getList(p);
-            // in case the variable is uninitialized
-            if (!isInit(addr1) || !isInit(addr2)) {
-                error("Variable should be initialized before use?");
-            }
-            // check if the operands are atoms
-            if (!isAtom(addr1) || !isAtom(addr2)) {
-                error("Expect an atom for plus?");
-            }
+            intHelper(addr1);
+            intHelper(addr2);
 
             int sum = lisp_getval(lisps[addr1]) + lisp_getval(lisps[addr2]);
             int plusAddr = idleTemp();
@@ -304,14 +294,7 @@ void intFun(Program* p) {
 
         #ifdef INTERP
             int addr = getList(p);
-            // in case the variable is uninitialized
-            if (!isInit(addr)) {
-                error("Variable should be initialized before use?");
-            }
-            // check if the operand is lisp
-            if (!isLisp(addr)) {
-                error("Expect a lisp structure for length function?");
-            }
+            listHelper(addr);
 
             int lenAddr = idleTemp();
             lisps[lenAddr] = lisp_atom(lisp_length(lisps[addr]));
@@ -328,7 +311,20 @@ void intFun(Program* p) {
     #endif
 }
 
-// return a bool value (not in a lisp structure)
+#ifdef INTERP
+// check if the variable is uninitialized or it's not a atoms
+void intHelper(int addr) {
+    if (!isInit(addr)) {
+        error("Variable should be initialized before use?");
+    }
+    if (!isAtom(addr)) {
+        error("Expect an atom for plus?");
+    }
+}
+#endif
+
+// check if the format of return bool funcion is correct
+// return the location of a bool in array (store in array directly, not in lisp)
 #ifdef INTERP
 int boolFun(Program* p) {
 #else
@@ -338,23 +334,9 @@ void boolFun(Program* p) {
         (p->ptr)++;
 
         #ifdef INTERP
-            int addr1 = getList(p);
-            int addr2 = getList(p);
-            // in case the variable is uninitialized
-            if (!isInit(addr1) || !isInit(addr2)) {
-                error("Variable should be initialized before use?");
-            }
-            // check if the operands are atoms
-            if (!isAtom(addr1) || !isAtom(addr2)) {
-                error("Expect an atom for bool operation?");
-            }
-            
+            int flag = boolHelper(p);
             int boolAddr = idleTemp();
-            if (lisp_getval(lisps[addr1]) < lisp_getval(lisps[addr2])) {
-                lisps[boolAddr] = (lisp*)TRUE;
-            } else {
-                lisps[boolAddr] = (lisp*)FALSE;
-            }
+            lisps[boolAddr] = flag < 0 ? (lisp*)TRUE : (lisp*)FALSE;
             return boolAddr;
         #else
             getList(p);
@@ -367,23 +349,9 @@ void boolFun(Program* p) {
         (p->ptr)++;
 
         #ifdef INTERP
-            int addr1 = getList(p);
-            int addr2 = getList(p);
-            // in case the variable is uninitialized
-            if (!isInit(addr1) || !isInit(addr2)) {
-                error("Variable should be initialized before use?");
-            }
-            // check if the operands are atoms
-            if (!isAtom(addr1) || !isAtom(addr2)) {
-                error("Expect an atom for bool operation?");
-            }
-            
+            int flag = boolHelper(p);
             int boolAddr = idleTemp();
-            if (lisp_getval(lisps[addr1]) > lisp_getval(lisps[addr2])) {
-                lisps[boolAddr] = (lisp*)TRUE;
-            } else {
-                lisps[boolAddr] = (lisp*)FALSE;
-            }
+            lisps[boolAddr] = flag > 0 ? (lisp*)TRUE : (lisp*)FALSE;
             return boolAddr;
         #else
             getList(p);
@@ -396,23 +364,9 @@ void boolFun(Program* p) {
         (p->ptr)++;
 
         #ifdef INTERP
-            int addr1 = getList(p);
-            int addr2 = getList(p);
-            // in case the variable is uninitialized
-            if (!isInit(addr1) || !isInit(addr2)) {
-                error("Variable should be initialized before use?");
-            }
-            // check if the operands are atoms
-            if (!isAtom(addr1) || !isAtom(addr2)) {
-                error("Expect an atom for bool operation?");
-            }
-            
+            int flag = boolHelper(p);
             int boolAddr = idleTemp();
-            if (lisp_getval(lisps[addr1]) == lisp_getval(lisps[addr2])) {
-                lisps[boolAddr] = (lisp*)TRUE;
-            } else {
-                lisps[boolAddr] = (lisp*)FALSE;
-            }
+            lisps[boolAddr] = flag == 0 ? (lisp*)TRUE : (lisp*)FALSE;
             return boolAddr;
         #else
             getList(p);
@@ -426,6 +380,19 @@ void boolFun(Program* p) {
         return NONE;
     #endif
 }
+
+// check if the variable is uninitialized or it's not a atoms
+// return the difference between value1 and value2
+#ifdef INTERP 
+int boolHelper(Program* p) {
+    int addr1 = getList(p);
+    int addr2 = getList(p);
+    intHelper(addr1);
+    intHelper(addr2);
+
+    return lisp_getval(lisps[addr1]) - lisp_getval(lisps[addr2]);
+}
+#endif
 
 #ifdef INTERP
 // if a given variable is initialized, return true
@@ -452,7 +419,8 @@ bool isBool(int addr) {
 }
 #endif
 
-// return the address of the processed variable
+// check if the tokens are a legal list structure
+// return the location of the processed variable in array
 #ifdef INTERP
 int getList(Program* p) {
 #else
@@ -481,7 +449,7 @@ void getList(Program* p) {
         #endif
     }
 
-    // literal, return a idle variable storing literal lisp
+    // literal, return the location storing literal lisp
     if (p->wds[p->ptr][0] == '\'') {
         #ifdef INTERP
             return literal(p);
@@ -518,9 +486,9 @@ void getList(Program* p) {
     #endif
 }
 
-#ifdef INTERP
 // find an available temporary variable  
-// if no one is available, free variables from the start
+// if no one is available, free a location from the start and return it
+#ifdef INTERP
 int idleTemp() {
     static int ptr = TEMPSTART;
 
@@ -531,7 +499,7 @@ int idleTemp() {
     }
 
     int addr = ptr++;
-    // lisp case, no need to free if it's a bool
+    // only free it when it's a lisp
     if (isLisp(addr)) {
         lisp_free(&lisps[addr]);
     }
@@ -547,7 +515,7 @@ bool isIOFun(char* str) {
     return strSame(str, "SET") || strSame(str, "PRINT");
 }
 
-// functions related to IO and variable set
+// call IO functions in terms of the prefix
 void ioFun(Program* p) {
     if (strSame(p->wds[p->ptr], "SET")) {
         (p->ptr)++;
@@ -624,157 +592,86 @@ bool isIfFun(char* str) {
     return strSame(str, "IF");
 }
 
+// if function: if bool {} else {}
 void ifFun(Program* p) {
     (p->ptr)++;
-
-    if (!strSame(p->wds[p->ptr], "(")) {
-        error("Lack a left bracket in if funtion?");
-    }
-    (p->ptr)++;
+    checkLBrace(p);
 
     #ifdef INTERP
         int boolVal = (int)lisps[boolFun(p)];
-
-        if (!strSame(p->wds[p->ptr], ")")) {
-            error("Lack a right bracket in if funtion?");
-        }
-        (p->ptr)++;
-
-        if (!strSame(p->wds[p->ptr], "(")) {
-            error("Lack a left bracket in if funtion?");
-        }
-        (p->ptr)++;
+        checkRBrace(p);
+        checkLBrace(p);
 
         if (boolVal == TRUE) {
             instrcts(p);
-
-            if (!strSame(p->wds[p->ptr], "(")) {
-                error("Lack a left bracket in if funtion?");
-            }
-            (p->ptr)++;
-
+            checkLBrace(p);
             // move pointer to the end of if sub block
-            int countL = 1, countR = 0;
-            while (countL != countR) {
-                if (strSame(p->wds[p->ptr], "(")) {
-                    countL++;
-                } else if (strSame(p->wds[p->ptr], ")")) {
-                    countR++;
-                }
-                (p->ptr)++;
-            }
+            ifHelper(p);
         } else if (boolVal == FALSE) {
             // move the pointer to the start of if sub block
-            int countL = 1, countR = 0;
-            while (countL != countR) {
-                if (strSame(p->wds[p->ptr], "(")) {
-                    countL++;
-                } else if (strSame(p->wds[p->ptr], ")")) {
-                    countR++;
-                }
-                (p->ptr)++;
-            }
-
-            if (!strSame(p->wds[p->ptr], "(")) {
-                error("Lack a left bracket in if funtion?");
-            }
-            (p->ptr)++;
-
+            ifHelper(p);
+            checkLBrace(p);
             instrcts(p);
         }
     #else
         boolFun(p);
-
-        if (!strSame(p->wds[p->ptr], ")")) {
-            error("Lack a right bracket in if funtion?");
-        }
-        (p->ptr)++;
-
-        if (!strSame(p->wds[p->ptr], "(")) {
-            error("Lack a left bracket in if funtion?");
-        }
-        (p->ptr)++;
-
+        checkRBrace(p);
+        checkLBrace(p);
         instrcts(p);
-
-        if (!strSame(p->wds[p->ptr], "(")) {
-            error("Lack a left bracket in if funtion?");
-        }
-        (p->ptr)++;
-
+        checkLBrace(p);
         instrcts(p);
     #endif
 }
+
+#ifdef INTERP
+// move the pointer to the end of a if sub block
+void ifHelper(Program* p) {
+    int countL = 1, countR = 0;
+    while (countL != countR) {
+        if (strSame(p->wds[p->ptr], "(")) {
+            countL++;
+        } else if (strSame(p->wds[p->ptr], ")")) {
+            countR++;
+        }
+        (p->ptr)++;
+    }
+}
+#endif
 
 bool isLoopFun(char* str) {
     return strSame(str, "WHILE");
 }
 
+// loop function: while bool {}
 void loopFun(Program* p) {
     (p->ptr)++;
-
-    if (!strSame(p->wds[p->ptr], "(")) {
-        error("Lack a left bracket?");
-    }
-    (p->ptr)++;
+    checkLBrace(p);
 
     #ifdef INTERP
+        // store the start location of the loop
         int beforeLoop = p->ptr;
-
         while ((int)lisps[boolFun(p)] == TRUE) {
-            if (!strSame(p->wds[p->ptr], ")")) {
-                error("Lack a right bracket?");
-            }
-            (p->ptr)++;
-
-            if (!strSame(p->wds[p->ptr], "(")) {
-                error("Lack a left bracket?");
-            }
-            (p->ptr)++;
-
+            checkRBrace(p);
+            checkLBrace(p);
             instrcts(p);
             p->ptr = beforeLoop;
         }
 
-        if (!strSame(p->wds[p->ptr], ")")) {
-            error("Lack a right bracket?");
-        }
-        (p->ptr)++;
-
-        if (!strSame(p->wds[p->ptr], "(")) {
-            error("Lack a left bracket?");
-        }
-        (p->ptr)++;
+        checkRBrace(p);
+        checkLBrace(p);
 
         // move the pointer to the end of the loop block
-        int countL = 1, countR = 0;
-        while (countL != countR) {
-            if (strSame(p->wds[p->ptr], "(")) {
-                countL++;
-            } else if (strSame(p->wds[p->ptr], ")")) {
-                countR++;
-            }
-            (p->ptr)++;
-        }
+        ifHelper(p);
     #else
         boolFun(p);
-
-        if (!strSame(p->wds[p->ptr], ")")) {
-            error("Lack a right bracket?");
-        }
-        (p->ptr)++;
-
-        if (!strSame(p->wds[p->ptr], "(")) {
-            error("Lack a left bracket?");
-        }
-        (p->ptr)++;
-
+        checkRBrace(p);
+        checkLBrace(p);
         instrcts(p);
     #endif
 }
 
 // Check if a letter is a valid variable. 
-// If so, return the address of the variable in the variable array
+// If so, return the location of the variable in array
 #ifdef INTERP
 int var (Program* p) {
 #else
@@ -854,10 +751,26 @@ bool strSame(char* str1, char* str2) {
     return strcmp(str1, str2) == 0 ? true : false;
 }
 
+// check if the left brace exits
+void checkLBrace(Program* p) {
+    if (!strSame(p->wds[p->ptr], "(")) {
+        error("Lack a left bracket in if funtion?");
+    }
+    (p->ptr)++;
+}
+
+// check if the right brace exits
+void checkRBrace(Program* p) {
+    if (!strSame(p->wds[p->ptr], ")")) {
+        error("Lack a left bracket in if funtion?");
+    }
+    (p->ptr)++;
+}
+
 void error(char* str) {
     fprintf(stderr, "Fatal Error : %s \n", str);
     #ifdef INTERP
-        freeSpace();
+        freeLisps();
     #endif
     free(program);
     exit(EXIT_FAILURE);
@@ -865,7 +778,7 @@ void error(char* str) {
 
 #ifdef INTERP
 // free all the allocated spaces
-void freeSpace() {
+void freeLisps() {
     // free all of the variables
     for (int i = 0; i < VARNUM; i++) {
         if (isLisp(i)) {
@@ -876,13 +789,36 @@ void freeSpace() {
 }
 #endif
 
-void testNuclei() {
+#ifdef INTERP
+void testInterp() {
+    
+    
+    // tests for functions used to classify functions
+
+}
+#else
+void testParse() {
+    // tests for getToken()
+
+}
+#endif
+
+// tests for getToken()
+void testToken() {
+    FILE* filePtr = fopen("testTokens.ncl", "r");
+    Program* pFile = getTokens(filePtr);
+
     char wds[MAXNUMTOKENS][MAXTOKENSIZE] = {"(", "(", "SET", "A", "'1'", ")", "(", "PRINT", "A", ")", ")"};
     Program p;
     p.ptr = 0;
-    for (int i = 0; i < MAXNUMTOKENS; i++) {
+    for (int i = 0; i < TESTTOKENS; i++) {
         strcpy(p.wds[i], wds[i]);
     }
-    
-    prog(&p);
+
+    // check if all the tokens are the same
+    for (int i = 0; i < TESTTOKENS; i++) {
+        assert(strcmp(pFile->wds[i], p.wds[i]) == 0);
+    }
+
+    free()
 }

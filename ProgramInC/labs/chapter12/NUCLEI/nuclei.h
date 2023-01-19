@@ -4,16 +4,15 @@
 #define MAXNUMTOKENS 1000
 #define MAXTOKENSIZE 100
 #define BUFLEN 256
-// 26 alphabet + 74 temporary
-#define VARNUM 100
+// 26 alphabet + 174 temporary
+#define VARNUM 200
 #define TEMPSTART 26
 #define VARLEN 1
 #define NONE -1
 #define DEFADDR -2
 #define TRUE -3
 #define FALSE -4
-
-// #define INTERP
+#define TESTTOKENS 11
 
 typedef struct program {
     char wds[MAXNUMTOKENS][MAXTOKENSIZE];
@@ -25,39 +24,48 @@ Program* getTokens(FILE* fp);
 void prog(Program* p);
 void instrcts(Program* p);
 void instrct(Program* p);
+
 bool isRetFun(char* str);
 bool isListFun(char* str);
 bool isIntFun(char* str);
 bool isBoolFun(char* str);
-bool isInit(int addr);
-bool isLisp(int addr);
-bool isAtom(int addr);
-bool isBool(int addr);
-int idleTemp();
-int idleChild();
-int idleMoth();
+
 bool isIOFun(char* str);
 void ioFun(Program* p);
 void setFun(Program* p);
 void printFun(Program* p);
+
 bool isIfFun(char* str);
 void ifFun(Program* p);
+
 bool isLoopFun(char* str);
 void loopFun(Program* p);
+
 void string(Program* p);
 bool strSame(char* str1, char* str2);
+void checkLBrace(Program* p);
+void checkRBrace(Program* p);
 void error(char* str);
-void freeSpace();
-void testNuclei();
 
 #ifdef INTERP
     int retFun(Program* p);
     int listFun(Program* p);
+    void listHelper(int addr);
     int intFun(Program* p);
+    void intHelper(int addr);
     int boolFun(Program* p);
+    int boolHelper(Program* p);
+    bool isInit(int addr);
+    bool isLisp(int addr);
+    bool isAtom(int addr);
+    bool isBool(int addr);
+    int idleTemp();
     int getList(Program* p);
+    void ifHelper(Program* p);
     int var(Program* p);
     int literal(Program* p);
+    void freeLisps();
+    void testInterp();
 #else
     void retFun(Program* p);
     void listFun(Program* p);
@@ -66,4 +74,5 @@ void testNuclei();
     void getList(Program* p);
     void var(Program* p);
     void literal(Program* p);
+    void testParse();
 #endif

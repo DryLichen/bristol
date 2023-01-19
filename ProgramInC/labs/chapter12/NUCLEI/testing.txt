@@ -1,5 +1,7 @@
-Basically, testNuclei() is used to test this program.
+1. Some basic functions are tested in testNuclei().
 
-1. lisp_fromstring: Tests for this function is
+    1.1. getTokens: Test it by reading testToken.ncl. 
 
-2. 
+    2. lisp_fromstring: 
+
+3. comments
