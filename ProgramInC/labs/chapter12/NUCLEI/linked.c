@@ -80,15 +80,14 @@ void copyHelper(lisp* copyLisp, const lisp* l) {
         return;
     }
 
-    if (lisp_car(l) == NULL) {
+    if (lisp_car(l) == NULL && lisp_cdr(l) == NULL) {
         return;
     }
     copyLisp->car = lisp_atom((lisp_getval(lisp_car(l))));
-
-    if (lisp_cdr(l) == NULL) {
-        return;
+    
+    if (lisp_cdr(l) != NULL) {
+        copyLisp->cdr = lisp_atom(DEFAULT);
     }
-    copyLisp->cdr = lisp_atom(DEFAULT);
 
     copyHelper(lisp_car(copyLisp), lisp_car(l));
     copyHelper(lisp_cdr(copyLisp), lisp_cdr(l));

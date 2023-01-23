@@ -1,0 +1,84 @@
+(
+    # TESTS FOR <LISTFUNC>
+    # tests for <CAR> <VAR> and <CONS> <VAR>
+    (PRINT "tests for <CAR> <VAR> and <CONS> <VAR>")
+    (SET A '(1 (2 (3 4)))')
+    (PRINT A)
+    (SET C A)
+    (PRINT C)
+    (SET B (CAR A))
+    (PRINT B)
+    (SET D (CDR A))
+    (PRINT D)
+    (SET B (CAR C))
+    (PRINT B)
+    (SET D (CDR C))
+    (PRINT D)
+    (SET A NIL)
+    (PRINT A)
+    (SET B (CAR A))
+    (PRINT B)
+    (SET D (CDR A))
+    (PRINT D)
+    
+    # tests for <CAR>or<CDR> <LITERAL> | NIL
+    (PRINT "")
+    (PRINT "tests for <CAR>or<CDR> <LITERAL> | NIL")
+    (SET B (CAR '(1 (5 6)) '))
+    (PRINT B)
+    (SET C (CDR '(1 (5 6)) '))
+    (PRINT C)
+    (SET B (CAR NIL))
+    (PRINT B)
+    (SET B (CDR NIL))
+    (PRINT B)
+
+    # tests for <CONS> <VAR> | <LITERAL> | NIL | ( <RETFUNC> )
+    (PRINT "")
+    (PRINT "tests for <CONS> <VAR> | <LITERAL> | NIL | ( <RETFUNC> )")
+    (SET A '(2 (3) 5 6 (7 8))')
+    (SET B (CONS A NIL))
+    (PRINT B)
+    (SET A (CONS A (CAR B)))
+    (PRINT A)
+    (SET C (CONS '(1 2 (3 4))' '(7 12)'))
+    (PRINT C)
+
+
+    # TESTS FOR <INTFUNC>
+    (PRINT "")
+    (PRINT "TESTS FOR <INTFUNC>")
+    (SET A '1')
+    (SET B '2')
+    (PRINT (PLUS A B))
+    (PRINT (PLUS '4' '6'))
+    (SET A '(2 (3) 5 6 (7 8))')
+    (PRINT (LENGTH A))
+    (PRINT (LENGTH '(2 (3) 5 6 (7 8))'))
+    (PRINT (LENGTH (CDR '(2 (3) 5 6 (7 8))')))
+    (PRINT (LENGTH NIL))
+
+    # TESTS FOR <BOOLFUNC>
+    (PRINT "")
+    (PRINT "TESTS FOR <BOOLFUNC>")
+    (SET A '1')
+    (SET B '2')
+    (PRINT (LESS A B))
+    (PRINT (EQUAL A B))
+    (PRINT (GREATER A B))
+    (PRINT (EQUAL '4' B))
+    (PRINT (EQUAL '4' '4'))
+
+    # TESTS FOR <IF>
+    (PRINT "")
+    (PRINT "TESTS FOR <IF>")
+    (SET A '1')
+    (SET B '6')
+    (IF (EQUAL A B) ((PRINT "A equals to B")) ((PRINT "A doesn't equal B")))
+
+    # TESTS FOR <LOOP>
+    (WHILE (LESS A B) (
+        (PRINT A)
+        (SET A (PLUS A '1'))
+    ))
+)

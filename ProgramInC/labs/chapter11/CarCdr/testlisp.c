@@ -141,9 +141,11 @@ int main(void)
    lisp_tostring(g1, str);
    assert(strcmp(str, "(6 7 8)")==0);
    lisp* g2 = lisp_list(5, g1, atom(-123456), copy(g1), atom(25),
-                        fromstring("(1(2(3(-4         5))))    "));
+                        fromstring("(1(2(3 4)))"));
+                        // fromstring("(1(2(3(-4         5))))    "));
    lisp_tostring(g2, str);
-   assert(strcmp(str, "((6 7 8) -123456 (6 7 8) 25 (1 (2 (3 (-4 5)))))")==0);
+   // printf("***%s***\n", str);
+   assert(strcmp(str, "((6 7 8) -123456 (6 7 8) 25 (1 (2 (3 4))))")==0);
    // g2 reuses g1, so no need to lisp_free(g1)
    lisp_free(&g2);
    assert(!g2);

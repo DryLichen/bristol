@@ -12,7 +12,9 @@
 #define DEFADDR -2
 #define TRUE -3
 #define FALSE -4
-#define TESTTOKENS 11
+#define TESTTOKENS 17
+
+// #define INTERP
 
 typedef struct program {
     char wds[MAXNUMTOKENS][MAXTOKENSIZE];
@@ -20,7 +22,13 @@ typedef struct program {
 } Program;
 
 void initLisps();
+
 Program* getTokens(FILE* fp);
+void clearEnd(char* buffer, int* len);
+void processWords(Program*p, char* buffer, int* i, int* len, int* count, int* wordPtr);
+void processLit(Program*p, char* buffer, int* i, int* len, int* count, int* wordPtr);
+void processOther(Program*p, char* buffer, int* i, int* len, int* count, int* wordPtr);
+
 void prog(Program* p);
 void instrcts(Program* p);
 void instrct(Program* p);
@@ -47,6 +55,9 @@ void checkLBrace(Program* p);
 void checkRBrace(Program* p);
 void error(char* str);
 
+void testToken();
+void testBasic();
+
 #ifdef INTERP
     int retFun(Program* p);
     int listFun(Program* p);
@@ -55,24 +66,31 @@ void error(char* str);
     void intHelper(int addr);
     int boolFun(Program* p);
     int boolHelper(Program* p);
+
     bool isInit(int addr);
     bool isLisp(int addr);
     bool isAtom(int addr);
     bool isBool(int addr);
+
     int idleTemp();
+
     int getList(Program* p);
     void ifHelper(Program* p);
     int var(Program* p);
     int literal(Program* p);
+    
     void freeLisps();
+
     void testInterp();
 #else
     void retFun(Program* p);
     void listFun(Program* p);
     void intFun(Program* p);
     void boolFun(Program* p);
+
     void getList(Program* p);
     void var(Program* p);
     void literal(Program* p);
+
     void testParse();
 #endif

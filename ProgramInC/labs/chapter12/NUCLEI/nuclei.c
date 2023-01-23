@@ -48,53 +48,95 @@ void initLisps() {
 
 // read the file to get all the tokens and store them in program
 Program* getTokens(FILE* fp) {
-    Program* program = (Program*)ncalloc(1, sizeof(Program));
-    program->ptr = 0;
+    Program* p = (Program*)ncalloc(1, sizeof(Program));
+    p->ptr = 0;
 
     char buffer[BUFLEN];
     int count = 0, wordPtr = 0, len = 0;
-    bool flag;
+    bool flag = true;
     while (fgets(buffer, BUFLEN, fp) != NULL) {
-        len = (int)strlen(buffer);
-        for (int i = 0; i < len; i++, wordPtr = 0, flag = false) {
-            // 1. brackets
+        clearEnd(buffer, &len);
+        for (int i = 0; i < len; i++, wordPtr = 0, flag = true) {
             if (buffer[i] == '(' || buffer[i] == ')') {
-                program->wds[count][wordPtr++] = buffer[i];
-                flag = true;
+                // 1. brackets
+                p->wds[count][wordPtr++] = buffer[i];
             } else if (isalpha(buffer[i])) {
                 // 2. words inlucding keywords, NIL and variables
-                while (isalpha(buffer[i])) {
-                    program->wds[count][wordPtr++] = buffer[i++];
-                }
-                i--;
-                flag = true;
+                processWords(p, buffer, &i, &len, &count, &wordPtr);
             } else if (buffer[i] == '\"' || buffer[i] == '\'') {
                 // 3. string or list
-                char c = buffer[i];
-                program->wds[count][wordPtr++] = buffer[i++];
-                while (buffer[i] != c) {
-                    program->wds[count][wordPtr++] = buffer[i++];
-                }
-                program->wds[count][wordPtr++] = buffer[i];
-                flag = true;
+                processLit(p, buffer, &i, &len, &count, &wordPtr);
             } else if (buffer[i] == '#') {
-                // when detecting # indicating comment, skip the rest part
+                // 4. when detecting # indicating comment, skip the rest part
                 i = len - 1;
+                flag = false;
+            } else if (!isspace(buffer[i])) {
+                // 5. read other chars except space chars
+                processOther(p, buffer, &i, &len, &count, &wordPtr);
+            } else {
+                // 6. spaces
+                flag = false;
             }
 
             // tail process, add terminator at the end of a token
             if (flag) {
-                program->wds[count++][wordPtr] = '\0';
+                p->wds[count++][wordPtr] = '\0';
             }
         }
     }
     fclose(fp);
-    return program;
+    return p;
+}
+
+// delete the new line and return char at the end of buffer
+void clearEnd(char* buffer, int* len) {
+    *len = (int)strlen(buffer);
+    if (*len <= 0) {
+
+    }
+
+    if (buffer[*len - 1] == '\n' || buffer[*len - 1] == '\r') {
+        buffer[*len - 1] = '\0';
+        *len = (int)strlen(buffer);
+        if (*len <= 0) {
+            return;
+        }
+        if (buffer[*len - 1] == '\n' || buffer[*len - 1] == '\r') {
+            buffer[*len - 1] = '\0';
+            *len = (int)strlen(buffer);
+        }
+    }
+}
+
+// read words inlucding keywords, NIL and variables
+void processWords(Program* p, char* buffer, int* i, int* len, int* count, int* wordPtr) {
+    while (*i < *len && isalpha(buffer[*i])) {
+        p->wds[*count][(*wordPtr)++] = buffer[(*i)++];
+    }
+    (*i)--;
+}
+
+// read string or literal lisp
+void processLit(Program* p, char* buffer, int* i, int* len, int* count, int* wordPtr) {
+    char c = buffer[*i];
+    p->wds[*count][(*wordPtr)++] = buffer[(*i)++];
+    while (*i < *len - 1 && buffer[*i] != c) {
+        p->wds[*count][(*wordPtr)++] = buffer[(*i)++];
+    }
+    p->wds[*count][(*wordPtr)++] = buffer[*i];
+}
+
+// read other chars except space chars
+void processOther(Program* p, char* buffer, int* i, int* len, int* count, int* wordPtr) {
+    while (*i < *len && !isspace(buffer[*i])) {
+        p->wds[*count][(*wordPtr)++] = buffer[(*i)++];
+    }
+    (*i)--;
 }
 
 void prog(Program* p) {
     if (!strSame(p->wds[p->ptr], "(")) {
-        error("Lack the first left bracket?");
+        error("Expect a first left bracket?");
     }
     (p->ptr)++;
     instrcts(p);
@@ -113,7 +155,7 @@ void instrcts(Program* p) {
 // process only one function, report error when it's not a function 
 void instrct(Program* p) {
     if (!strSame(p->wds[p->ptr], "(")) {
-        error("Lack the left bracket for a function?");
+        error("Expect a left bracket for a function?");
     }
     (p->ptr)++;
 
@@ -127,11 +169,11 @@ void instrct(Program* p) {
     } else if (isLoopFun(p->wds[p->ptr])) {
         loopFun(p);
     } else {
-        error("Lack a function?");  
+        error("Expect a function?");  
     }
 
     if (!strSame(p->wds[p->ptr], ")")) {
-        error("Lack the right bracket for a function?");
+        error("Expect a right bracket for a function?");
     }
     (p->ptr)++;
 }
@@ -244,7 +286,7 @@ void listFun(Program* p) {
         #endif
     }
     
-    error("Lack a list function?");
+    error("Expect a list function?");
     #ifdef INTERP
         return NONE;
     #endif
@@ -257,7 +299,7 @@ void listHelper(int addr) {
         error("Variable should be initialized before use?");
     }
     if (!isLisp(addr)) {
-        error("Expect a lisp structure for cdr function?");
+        error("Expect a lisp structure?");
     }
 }
 #endif
@@ -305,7 +347,7 @@ void intFun(Program* p) {
         #endif
     }
 
-    error("Lack a int function?");
+    error("Expect a int function?");
     #ifdef INTERP
         return NONE;
     #endif
@@ -318,7 +360,7 @@ void intHelper(int addr) {
         error("Variable should be initialized before use?");
     }
     if (!isAtom(addr)) {
-        error("Expect an atom for plus?");
+        error("Expect an atom?");
     }
 }
 #endif
@@ -375,7 +417,7 @@ void boolFun(Program* p) {
         #endif
     }
 
-    error("Lack a bool fnution?");
+    error("Expect a bool funtion?");
     #ifdef INTERP
         return NONE;
     #endif
@@ -466,21 +508,21 @@ void getList(Program* p) {
         #ifdef INTERP
             int addr = retFun(p);
             if (!strSame(p->wds[p->ptr], ")")) {
-                error("Lack a right single-quote for list?");
+                error("Expect a right single-quote for list?");
             }
             (p->ptr)++;
             return addr;
         #else
             retFun(p);
             if (!strSame(p->wds[p->ptr], ")")) {
-                error("Lack a right single-quote for list?");
+                error("Expect a right single-quote for list?");
             }
             (p->ptr)++;
             return;
         #endif
     }
 
-    error("Lack a list?");
+    error("Expect a list?");
     #ifdef INTERP
         return NONE;
     #endif
@@ -528,6 +570,8 @@ void ioFun(Program* p) {
         printFun(p);
         return;
     }
+
+    error("Expect a IO function?");
 }
 
 // set a alphabet variable with the deep copy of the tmp list
@@ -535,20 +579,22 @@ void setFun(Program* p) {
     #ifdef INTERP
         int setAddr = var(p);
         int addr = getList(p);
-        // if the alphabet variable contains a lisp already, free it
-        if (isLisp(setAddr)) {
-            lisp_free(&lisps[setAddr]);
-        }
+        lisp* l = NULL;
 
         // lisp case
         if (isLisp(addr)) {
-            lisps[setAddr] = lisp_copy(lisps[addr]);
+            l = lisp_copy(lisps[addr]);
         }
-
         // bool case
         if (isBool(addr)) {
-            lisps[setAddr] = lisps[addr];
+            l = lisps[addr];
         }
+
+        // if the target location contains a lisp already, free it
+        if (isLisp(setAddr)) {
+            lisp_free(&lisps[setAddr]);
+        }
+        lisps[setAddr] = l;
     #else
         var(p);
         getList(p);
@@ -682,7 +728,7 @@ void var(Program* p) {
     }
 
     if ((p->wds[p->ptr])[0] > 'Z' || (p->wds[p->ptr])[0] < 'A') {
-        error("Expect a alphabet letter?");
+        error("Expect an uppercase alphabet letter?");
     }
 
 
@@ -724,12 +770,12 @@ void literal(Program* p) {
 #endif
     // check the right single-quote
     if (p->wds[p->ptr][strlen(p->wds[p->ptr]) - 1] != '\'') {
-        error("Lack a right single-quote for literal list?");
+        error("Expect a right single-quote for literal list?");
     }
 
     // check if the literal list is valid 
     #ifdef INTERP
-        // process string
+        // process string by deleting single-quotes
         char buff[BUFLEN];
         size_t i = 1;
         for (; i < strlen(p->wds[p->ptr]) - 1; i++) {
@@ -754,7 +800,7 @@ bool strSame(char* str1, char* str2) {
 // check if the left brace exits
 void checkLBrace(Program* p) {
     if (!strSame(p->wds[p->ptr], "(")) {
-        error("Lack a left bracket in if funtion?");
+        error("Expect a left bracket for if or loop funtion?");
     }
     (p->ptr)++;
 }
@@ -762,7 +808,7 @@ void checkLBrace(Program* p) {
 // check if the right brace exits
 void checkRBrace(Program* p) {
     if (!strSame(p->wds[p->ptr], ")")) {
-        error("Lack a left bracket in if funtion?");
+        error("Expect a left bracket for if or loop funtion?");
     }
     (p->ptr)++;
 }
@@ -791,34 +837,147 @@ void freeLisps() {
 
 #ifdef INTERP
 void testInterp() {
-    
-    
-    // tests for functions used to classify functions
+    // test for getToken()
+    testToken();
 
+    // test for common functions
+    testBasic();
+    
+    // tests for semantic checkers
+    char wds[MAXNUMTOKENS][MAXTOKENSIZE] = {"(", "(", "SET", "A", "\'1\'", ")", "(", "PLUS", "A", "\'3\'", ")", ")"};
+    Program p;
+    p.ptr = 0;
+    for (int i = 0; i < MAXNUMTOKENS; i++) {
+        strcpy(p.wds[i], wds[i]);
+    }
+
+    // tests for initialization
+    initLisps();
+    assert((int)lisps[23] == -2);
+    assert((int)lisps[100] == -2);
+
+    assert(idleTemp() == TEMPSTART);
+
+    p.ptr = 4;
+    assert(literal(&p) == TEMPSTART);
+    assert(p.ptr == 5);
+    p.ptr = 4;
+    assert(getList(&p) == TEMPSTART + 1);
+    assert(p.ptr == 5);
+    checkRBrace(&p);
+    assert(p.ptr == 6);
+
+    p.ptr = 3;
+    assert(var(&p) == 0);
+    assert(p.ptr == 4);
+
+    p.ptr = 3;
+    setFun(&p);
+    assert(lisp_getval(lisps[0]) == lisp_getval(lisps[TEMPSTART + 2]));
+    assert(lisp_getval(lisps[0]) == 1);
+    assert(p.ptr == 5);
+
+    p.ptr = 7;
+    assert(intFun(&p) == TEMPSTART + 4);
+    assert(lisp_getval(lisps[TEMPSTART + 3]) == 3);
+    assert(lisp_getval(lisps[TEMPSTART + 4]) == 4);
+    assert(p.ptr == 10);
+
+    p.ptr = 0;
+    prog(&p);
+    assert(p.ptr == 12);
+
+    freeLisps();
 }
+
 #else
 void testParse() {
-    // tests for getToken()
+    // test for getToken()
+    testToken();
 
+    // test for common functions
+    testBasic();
+
+    // initiate a basic program object
+    char wds[MAXNUMTOKENS][MAXTOKENSIZE] = {"(", "(", "SET", "A", "\'1\'", ")", "(", "PRINT", "\"NO\"", ")", ")"};
+    Program p;
+    p.ptr = 0;
+    for (int i = 0; i < MAXNUMTOKENS; i++) {
+        strcpy(p.wds[i], wds[i]);
+    }
+
+    // tests for syntax checkers
+    checkLBrace(&p);
+    assert(p.ptr = 1);
+    p.ptr = 3;
+    var(&p);
+    assert(p.ptr == 4);
+    literal(&p);
+    assert(p.ptr == 5);
+    checkRBrace(&p);
+    assert(p.ptr = 6);
+    p.ptr = 4;
+    getList(&p);
+    assert(p.ptr == 5);
+    p.ptr = 2;
+    ioFun(&p);
+    assert(p.ptr == 5);
+    p.ptr = 3;
+    setFun(&p);
+    assert(p.ptr == 5);
+
+    p.ptr = 8;
+    string(&p);
+    assert(p.ptr == 9);
+    p.ptr = 8;
+    printFun(&p);
+    assert(p.ptr == 9);
+
+    p.ptr = 0;
+    prog(&p);
+    assert(p.ptr == 11);
 }
 #endif
 
 // tests for getToken()
 void testToken() {
-    FILE* filePtr = fopen("testTokens.ncl", "r");
-    Program* pFile = getTokens(filePtr);
+    FILE* filePtr = fopen("testToken.ncl", "r");
+    Program* pFile = NULL;
+    pFile = getTokens(filePtr);
 
-    char wds[MAXNUMTOKENS][MAXTOKENSIZE] = {"(", "(", "SET", "A", "'1'", ")", "(", "PRINT", "A", ")", ")"};
+    char wds[MAXNUMTOKENS][MAXTOKENSIZE] = {"(", "(", "(", "SET", "A", "\'  1   \'", ")", "&&70",
+                                     "3434", "\" AA#", "(", "PRINT", "fs", "7}", "A", ")", ")"};
     Program p;
     p.ptr = 0;
     for (int i = 0; i < TESTTOKENS; i++) {
         strcpy(p.wds[i], wds[i]);
     }
 
-    // check if all the tokens are the same
+    // check if all the tokens are same
     for (int i = 0; i < TESTTOKENS; i++) {
         assert(strcmp(pFile->wds[i], p.wds[i]) == 0);
     }
 
-    free()
+    free(pFile);
+}
+
+// tests for common functions
+void testBasic() {
+    // tests for redirector functions
+    assert(isRetFun("CAR"));
+    assert(isRetFun("PLUS"));
+    assert(!isRetFun("IF"));
+    assert(isListFun("CONS"));
+    assert(!isListFun("PLUS"));
+    assert(isIntFun("LENGTH"));
+    assert(!isIntFun("WHILE"));
+    assert(isBoolFun("GREATER"));
+    assert(isIOFun("PRINT"));
+    assert(!isIOFun(" PRINT"));
+    assert(isIfFun("IF"));
+    assert(isLoopFun("WHILE"));
+
+    // helpers
+    assert(strSame("ADB", "ADB"));
+    assert(!strSame("ADB", "adb"));
 }

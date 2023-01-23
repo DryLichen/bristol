@@ -80,15 +80,14 @@ void copyHelper(lisp* copyLisp, const lisp* l) {
         return;
     }
 
-    if (lisp_car(l) == NULL) {
+    if (lisp_car(l) == NULL && lisp_cdr(l) == NULL) {
         return;
     }
     copyLisp->car = lisp_atom((lisp_getval(lisp_car(l))));
-
-    if (lisp_cdr(l) == NULL) {
-        return;
+    
+    if (lisp_cdr(l) != NULL) {
+        copyLisp->cdr = lisp_atom(DEFAULT);
     }
-    copyLisp->cdr = lisp_atom(DEFAULT);
 
     copyHelper(lisp_car(copyLisp), lisp_car(l));
     copyHelper(lisp_cdr(copyLisp), lisp_cdr(l));
@@ -600,4 +599,18 @@ void test() {
     assert(strcmp("((3 (0 2)) (0 2) -100)", str) == 0);
     lisp_free(&l3);
     assert(!l3);
+
+    // lisp_copy(1 (2 (3 4)))
+    l1 = lisp_fromstring("(1 (2 (3 4)))");
+    lisp_tostring(l1, str);
+    printf("**%s**\n", str);
+    // l2 = lisp_copy(l1);
+    l2 = lisp_cons(lisp_atom(3), lisp_cons(lisp_atom(4), NULL));
+    l3 = lisp_list(2, lisp_atom(2), l2);
+    l4 = lisp_list(2, lisp_atom(1), l3);
+    lisp_tostring(l4, str);
+    printf("**l4: %s**\n", str);
+    l5 = lisp_copy(l4);
+    lisp_tostring(l5, str);
+    printf("**copyl4: %s**\n", str);
 }

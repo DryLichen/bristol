@@ -1,7 +1,125 @@
-1. Some basic functions are tested in testNuclei().
+Attention: If the nuclei.c can't run, maybe it's because testToken.ncl is used in testToken().
+    Please include testToken.ncl in directory or just simply delete testToken() and the lines
+    referencing it.
 
-    1.1. getTokens: Test it by reading testToken.ncl. 
 
-    2. lisp_fromstring: 
 
-3. comments
+1. Read file
+    getTokens(): Test it by reading testToken.ncl in testToken().
+
+    Brackets, words(even it's not a correct word like '&&70'), string, literal lisp
+    will be put into char* array. Then, the content in this array is the same with
+    the expected result showing in testToken().
+
+    Comments can be put in a line individually or put at the end of a line. 
+    Tokens can still be read correctly even though there are comments. 
+
+    Spaces will be ignored no matter how many of them. I put random amount of spaces
+    outside brackets and inside a intact statement.
+
+    If string and literal lisp is at the end of each line and there is no right quotation
+    mark, stop at the end of each line, eg. " AA#
+
+
+
+2. Parser tests
+    2.1 White box test
+        Tests are included in testParse().
+
+        Basically, I create a program object and move the pointer pointing to tokens to test every function individually.
+        Since some of the functions need to call other functions, I test the deeper funcions like string() firstly.
+        Then, I move the pointer to test outer functions like prog() and listFun().
+
+        In conclusion, tokens can pass the syntax checkers, like "JHVFDH" can pass string().
+        Also, I use assert() to check the value of pointers after executing each fucntion. 
+        Like, after checkLBrace() or var(), the value of pointer will increase by 1.
+
+
+    2.2 Black box test
+        Tests are implemented by run ./parse with file testAll.ncl.
+
+        The result printed at command line is the same with expected result.
+        In conclusion, the interpreter works just fine.
+
+        This file contains every situation that can happen when a user writes a correct program.
+
+        Basically, every type of return function is tested with four kinds of list. 
+        It includes situations like CAR and CONS to NIL, to a variable, to a literal lisp and to a return funciton.
+        Sometimes the result of return function is not used to set a variable, the space allocated can still be freed correctly.
+
+        For VAR, I test types like var from var, from literal lisp, NIL and return function.
+
+        LOOP and IF tests are at the final part of the test file. It's a combination of many statements.
+        Apparently, IO related tests are integrated in the tests for other 3 types of functions.
+
+        Use valgrind and parse_s to check the memory leak and stack overflow.
+
+
+    2.3 Errors
+        Tests are implemented by run ./parse with file testError.ncl.
+        Since it's tricky and redundant to create a bunch of files, I simply put all the 
+        failing situations in one file. When I need to test one situation, other lines will
+        be marked as comments.
+
+        Basically, every line in neclei which may call error() is tested in the file. 
+        Error includes the wrong function name and using of uninitialized variables and so on.
+        The specific aim of each test line is written above it in testError.ncl.
+        Also, error that will only happen when parsing is included, like the else in if.
+
+        Some slight error can be tolerated, like the wrong combination of space and codes, worong combination of 
+        space and number in literal lisp.
+        When the result of return function is not used, the space allocated can still be freed correctly.
+
+        Use valgrind and parse_s to check the memory leak and stack overflow.
+        Program exits correctly and memory is safe.
+
+
+3. Interpreter tests
+    3.1 White box test
+        Tests are included in testInterp().
+
+        Basically, I create a program object and move the pointer pointing to tokens to test every function individually.
+        Since some of the functions need to call other functions, I test the deeper funcions like string() firstly.
+        Then, I move the pointer to test outer functions like prog() and setFun().
+
+        When calling functions, ptr in program will change. 
+        I use assert() to test whether the pointer increases by the correct number.
+        Also, I use assert() to test if the correct values are stored at the expected location in variable array.
+
+
+    3.2 Black box test
+        Tests are implemented by run ./interp with file testAll.ncl.
+
+        The result printed at command line is the same with expected result.
+        In conclusion, the interpreter works just fine.
+
+        This file contains every situation that can happen when a user writes a correct program.
+
+        Basically, every type of return function is tested with four kinds of list. 
+        It includes situations like CAR or CONS to NIL, to a variable, to a literal lisp and to a return funciton.
+
+        For VAR, I test types like var from var, from literal lisp, NIL and return function.
+
+        LOOP and IF tests are at the final part of the test file. It's a combination of many statements.
+        Apparently, IO related tests are integrated in the tests for other 3 types of functions.
+
+        Use valgrind and parse_s to check the memory leak and stack overflow.
+
+
+    3.3 Errors
+        Tests are implemented by run ./interp with file testError.ncl.
+        Since it's tricky and redundant to create a bunch of files, I simply put all the 
+        failing situations in one file. When I need to test one situation, other lines will
+        be marked as comments.
+
+        Basically, every line in neclei which may call error() is tested in the file. 
+        Error includes the wrong function name and using of uninitialized variables and so on.
+        The specific aim of each test line is written above it in testError.ncl.
+        Also, error that will only happen when interpreting is included, like intfun to a lisp which is not atom. 
+
+        Some slight error can be tolerated, like the wrong combination of space and codes, worong combination of 
+        space and number in literal lisp.
+        When the result of return function is not used, the space allocated can still be freed correctly.
+
+        Use valgrind and interp_s to check the memory leak and stack overflow.
+        Program exits correctly and memory is safe.
