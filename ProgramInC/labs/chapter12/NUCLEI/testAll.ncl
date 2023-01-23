@@ -26,7 +26,7 @@
     (PRINT "tests for <CAR>or<CDR> <LITERAL> | NIL")
     (SET B (CAR '(1 (5 6)) '))
     (PRINT B)
-    (SET C (CDR '(1 (5 6)) '))
+    (SET C (CDR '(1 (-5 6)) '))
     (PRINT C)
     (SET B (CAR NIL))
     (PRINT B)
@@ -77,6 +77,8 @@
     (IF (EQUAL A B) ((PRINT "A equals to B")) ((PRINT "A doesn't equal B")))
 
     # TESTS FOR <LOOP>
+    (PRINT "")
+    (PRINT "TESTS FOR <LOOP>")
     (WHILE (LESS A B) (
         (PRINT A)
         (SET A (PLUS A '1'))

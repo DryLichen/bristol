@@ -1,2 +1,15 @@
-commet: #
-tolerance of nonstandard literal lisp
+1. comment: 
+    Comment can be put in a line alone or at the end of a statement.
+
+2. tolerance of nonstandard literal lisp
+    Even the number of spaces is not standard in a literal lisp, interpreter will still
+    interpret it correctly.
+
+3. New Grammar
+
+    # (IF (CONDITION) ((IF-TRUE-INSTRCTS)) ELIF (CONDITION) ((IF-TRUE-INSTRCTS)) ((IF_FALSE_INSTRCTS)) )
+    <IF>       ::= "IF" "(" <BOOLFUNC> ")" "(" <INSTRCTS> "(" <INSTRCTS> 
+                   | "IF" "(" <BOOLFUNC> ")" "(" <INSTRCTS> <ELIFS> <INSTRCTS>
+
+    <ELIFS>    ::= <ELSE> <ELIFS> | "("
+    <ELIF>     ::= "ELIF" "(" <BOOLFUNC> ")" "(" <INSTRCTS>

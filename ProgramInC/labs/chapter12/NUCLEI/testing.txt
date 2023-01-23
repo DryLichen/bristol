@@ -123,3 +123,9 @@ Attention: If the nuclei.c can't run, maybe it's because testToken.ncl is used i
 
         Use valgrind and interp_s to check the memory leak and stack overflow.
         Program exits correctly and memory is safe.
+
+
+
+4. Extension tests
+    Tests are implemented by run ./extension with file testExtens.ncl.
+    Situations like executing the first block or the second block are tested.

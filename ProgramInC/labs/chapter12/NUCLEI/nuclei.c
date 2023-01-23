@@ -638,7 +638,7 @@ bool isIfFun(char* str) {
     return strSame(str, "IF");
 }
 
-// if function: if bool {} else {}
+// if function: if bool {} {}
 void ifFun(Program* p) {
     (p->ptr)++;
     checkLBrace(p);
@@ -650,22 +650,54 @@ void ifFun(Program* p) {
 
         if (boolVal == TRUE) {
             instrcts(p);
-            checkLBrace(p);
-            // move pointer to the end of if sub block
-            ifHelper(p);
+            #ifdef EXTENS
+                // skip elif
+                while (strSame(p->wds[p->ptr], "ELIF")) {
+                    (p->ptr)++;
+                    checkLBrace(p);
+                    ifHelper(p);
+                    checkLBrace(p);
+                    ifHelper(p);
+                }
+                checkLBrace(p);
+                // move pointer to the end of if sub block
+                ifHelper(p);
+            #else
+                checkLBrace(p);
+                // move pointer to the end of if sub block
+                ifHelper(p);
+            #endif
         } else if (boolVal == FALSE) {
             // move the pointer to the start of if sub block
-            ifHelper(p);
-            checkLBrace(p);
-            instrcts(p);
+            #ifdef EXTENS
+                ifHelper(p);
+                int flag = false;
+                while (strSame(p->wds[p->ptr], "ELIF")) {
+                    (p->ptr)++;
+                    flag = elifFun(p);
+                }
+                if (!flag) {
+                    checkLBrace(p);
+                    instrcts(p);
+                }
+            #else
+                ifHelper(p);
+                checkLBrace(p);
+                instrcts(p);
+            #endif
         }
     #else
         boolFun(p);
         checkRBrace(p);
         checkLBrace(p);
         instrcts(p);
-        checkLBrace(p);
-        instrcts(p);
+        #ifdef EXTENS
+            elifsFun(p);
+            instrcts(p);
+        #else
+            checkLBrace(p);
+            instrcts(p);
+        #endif
     #endif
 }
 
@@ -681,6 +713,62 @@ void ifHelper(Program* p) {
         }
         (p->ptr)++;
     }
+}
+#endif
+
+#ifdef EXTENS
+void elifsFun(Program* p) {
+    if (strSame(p->wds[p->ptr], "(")) {
+        (p->ptr)++;
+        return;
+    }
+
+    if (strSame(p->wds[p->ptr], "ELIF")) {
+        (p->ptr)++;
+        elifFun(p);
+    }
+    elifsFun(p);
+}
+
+#ifdef INTERP
+bool elifFun(Program* p) {
+#else
+void elifFun(Program* p) {
+#endif
+    #ifdef INTERP
+        checkLBrace(p);
+        int boolVal = (int)lisps[boolFun(p)];
+        checkRBrace(p);
+        checkLBrace(p);
+
+        if (boolVal == TRUE) {
+            instrcts(p);
+            // skip elif
+            while (strSame(p->wds[p->ptr], "ELIF")) {
+                (p->ptr)++;
+                checkLBrace(p);
+                ifHelper(p);
+                checkLBrace(p);
+                ifHelper(p);
+            }
+            checkLBrace(p);
+            // move pointer to the end of if sub block
+            ifHelper(p);
+            return true;
+        } else if (boolVal == FALSE) {
+            // move the pointer to the start of elif sub block
+            ifHelper(p);
+            return false;
+        }
+
+        return false;
+    #else
+        checkLBrace(p);
+        boolFun(p);
+        checkRBrace(p);
+        checkLBrace(p);
+        instrcts(p);
+    #endif
 }
 #endif
 

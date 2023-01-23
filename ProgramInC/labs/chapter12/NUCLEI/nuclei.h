@@ -94,3 +94,12 @@ void testBasic();
 
     void testParse();
 #endif
+
+#ifdef EXTENS
+void elifsFun(Program* p);
+#ifdef INTERP
+bool elifFun(Program* p);
+#else
+void elifFun(Program* p);
+#endif
+#endif

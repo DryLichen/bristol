@@ -36,14 +36,17 @@ interp_s: nuclei.c linked.c general.c nuclei.h lisp.h general.h
 interp_v: nuclei.c linked.c general.c nuclei.h lisp.h general.h
 	$(CC) nuclei.c linked.c general.c $(VALG) -DINTERP -o interp_v $(LIBS)
 
+extension_p: nuclei.c linked.c general.c nuclei.h lisp.h general.h
+	$(CC) nuclei.c linked.c general.c $(RELEASE) -DEXTENS -o extension_p $(LIBS)
+
 extension: nuclei.c linked.c general.c nuclei.h lisp.h general.h
-	$(CC) nuclei.c linked.c general.c $(RELEASE) -DEXTENS -o interp $(LIBS)
+	$(CC) nuclei.c linked.c general.c $(RELEASE) -DEXTENS -DINTERP -o extension $(LIBS)
 
 extension_s: nuclei.c linked.c general.c nuclei.h lisp.h general.h
-	$(CC) nuclei.c linked.c general.c $(SANI) -DEXTENS -o interp_s $(LIBS)
+	$(CC) nuclei.c linked.c general.c $(SANI) -DEXTENS -DINTERP -o extension_s $(LIBS)
 
 extension_v: nuclei.c linked.c general.c nuclei.h lisp.h general.h
-	$(CC) nuclei.c linked.c general.c $(VALG) -DEXTENS -o interp_v $(LIBS)
+	$(CC) nuclei.c linked.c general.c $(VALG) -DEXTENS -DINTERP -o extension_v $(LIBS)
 
 
 all: parse parse_s parse_v interp interp_s interp_v

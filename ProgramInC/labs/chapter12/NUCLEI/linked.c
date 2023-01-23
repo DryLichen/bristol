@@ -248,6 +248,10 @@ lisp* lisp_fromstring(const char* str) {
     if (isdigit(*buff) || *buff == '-') {
         int tmp;
         assert(sscanf(buff, "%d", &tmp) == 1);
+        int len = getNumLen(tmp);
+        if (len != (int)strlen(buff)) {
+            error("Expect an lisp atom?");
+        }
         return lisp_atom(tmp);
     }
 
