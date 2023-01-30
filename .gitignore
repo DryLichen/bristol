@@ -354,3 +354,6 @@ MigrationBackup/
 # Executables
 *.exe
 *.out
+
+# External files
+processing-4.1.2/
