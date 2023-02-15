@@ -1,0 +1,7 @@
+Unit: [(${unit.name})]
+
+In this unit, you will learn about:
+
+[# th:each="topic: ${unit.topics}"]
+  - [(${topic})]
+[/]
