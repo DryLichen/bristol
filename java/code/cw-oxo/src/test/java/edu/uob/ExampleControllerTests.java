@@ -65,7 +65,12 @@ class ExampleControllerTests {
   void testInvalidIdentifierException() throws OXOMoveException {
     // Check that the controller throws a suitable exception when it gets an invalid command
     String failedTestComment = "Controller failed to throw an InvalidIdentifierLengthException for command `abc123`";
-    // The next lins is a bit ugly, but it is the easiest way to test exceptions (soz)
+    // The next line is a bit ugly, but it is the easiest way to test exceptions (soz)
     assertThrows(InvalidIdentifierLengthException.class, ()-> sendCommandToController("abc123"), failedTestComment);
   }
+
+//  @Test
+//  void testOXOExceptions() {
+//    assertThrows();
+//  }
 }

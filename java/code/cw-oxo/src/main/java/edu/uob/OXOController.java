@@ -2,10 +2,12 @@ package edu.uob;
 
 import edu.uob.OXOMoveException.*;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+
 public class OXOController {
     OXOModel gameModel;
-    private final Character X = 'X';
-    private final Character O = 'O';
 
     public OXOController(OXOModel model) {
         gameModel = model;
@@ -18,29 +20,42 @@ public class OXOController {
      */
     public void handleIncomingCommand(String command) throws OXOMoveException {
         int length = command.length();
-        if (length == 2 && checkWin() == 0) {
+        if (length == 2 && checkWin().equals(GAMESTATE.NOWINNER)) {
             // get the location of target cell
             char rowChar = command.charAt(0);
-            int rowNum;
-            if (Character.isUpperCase(rowChar)) {
-                rowNum = rowChar - 'A';
+            char columnChar = command.charAt(1);
+            int rowNum, columnNum;
+            if (!Character.isAlphabetic(rowChar)) {
+                throw new OXOMoveException.InvalidIdentifierCharacterException(RowOrColumn.ROW, rowChar);
+            } else if (!Character.isDigit(columnChar)) {
+                throw new OXOMoveException.InvalidIdentifierCharacterException(RowOrColumn.COLUMN, columnChar);
             } else {
-                rowNum = rowChar - 'a';
-            }
-            int columnNum = command.charAt(1) - '1';
-
-            OXOPlayer currPlayer = gameModel.getPlayerByNumber(gameModel.getCurrentPlayerNumber());
-            gameModel.setCellOwner(rowNum, columnNum, currPlayer);
-            int gameState = checkWin();
-            if (gameState == 1 || gameState == 2) {
-                gameModel.setWinner(currPlayer);
-            } else if (gameState == 3) {
-                gameModel.setGameDrawn();
+                if (Character.isUpperCase(rowChar)) {
+                    rowNum = rowChar - 'A';
+                } else {
+                    rowNum = rowChar - 'a';
+                }
+                columnNum = command.charAt(1) - '1';
             }
 
-            gameModel.setCurrentPlayerNumber(getNextPlayer());
-        } else if (command.equals("esc")) {
-            reset();
+            if (rowNum >= gameModel.getNumberOfRows()) {
+                throw new OXOMoveException.OutsideCellRangeException(RowOrColumn.ROW, rowNum);
+            } else if (columnNum >= gameModel.getNumberOfColumns()) {
+                throw new OXOMoveException.OutsideCellRangeException(RowOrColumn.COLUMN, columnNum);
+            } else if (gameModel.getCellOwner(rowNum, columnNum) != null) {
+                throw new OXOMoveException.CellAlreadyTakenException(rowNum, columnNum);
+            } else {
+                OXOPlayer currPlayer = gameModel.getPlayerByNumber(gameModel.getCurrentPlayerNumber());
+                gameModel.setCellOwner(rowNum, columnNum, currPlayer);
+                GAMESTATE gameState = checkWin();
+                if (gameState.equals(GAMESTATE.XWIN) || gameState.equals(GAMESTATE.OWIN)) {
+                    gameModel.setWinner(currPlayer);
+                } else if (gameState.equals(GAMESTATE.DRAW)) {
+                    gameModel.setGameDrawn();
+                }
+
+                gameModel.setCurrentPlayerNumber(getNextPlayer());
+            }
         } else {
             throw new OXOMoveException.InvalidIdentifierLengthException(length);
         }
@@ -60,7 +75,7 @@ public class OXOController {
      * increase the number of rows by one
      */
     public void addRow() {
-        if (checkWin() == 0) {
+        if (checkWin().equals(GAMESTATE.NOWINNER)) {
             gameModel.addRow();
         }
     }
@@ -69,7 +84,7 @@ public class OXOController {
      * decrease the number of rows by one
      */
     public void removeRow() {
-        if (checkWin() == 0) {
+        if (checkWin().equals(GAMESTATE.NOWINNER)) {
             gameModel.removeRow();
         }
     }
@@ -78,7 +93,7 @@ public class OXOController {
      * increase the number of columns by one
      */
     public void addColumn() {
-        if (checkWin() == 0) {
+        if (checkWin().equals(GAMESTATE.NOWINNER)) {
             gameModel.addColumn();
         }
     }
@@ -87,17 +102,17 @@ public class OXOController {
      * decrease the number of columns by one
      */
     public void removeColumn() {
-        if (checkWin() == 0) {
+        if (checkWin().equals(GAMESTATE.NOWINNER)) {
             gameModel.removeColumn();
         }
     }
 
     public void increaseWinThreshold() {
-
+        gameModel.setWinThreshold(gameModel.getWinThreshold() + 1);
     }
 
     public void decreaseWinThreshold() {
-
+        gameModel.setWinThreshold(gameModel.getWinThreshold() - 1);
     }
 
     /**
@@ -112,114 +127,122 @@ public class OXOController {
     }
 
     /**
-     * @return 0 for no winner; 1 for x win; 2 for o win; 3 for draw
+     * @return the Letter of the winner; null for no winner
      */
-    public int checkWin() {
+    public Character checkWin() {
         // win horizontally
-        int winHorizontal = winHorizontal();
-        if (winHorizontal != 0) {
+        Character winHorizontal = winHorizontal();
+        if (winHorizontal != null) {
             return winHorizontal;
         }
 
         // win vertically
-        int winVertical = winVertical();
-        if (winVertical != 0) {
+        Character winVertical = winVertical();
+        if (winVertical != null) {
             return winVertical;
         }
 
         // win diagonally
-        int winDiagonal = winDiagonal();
-        if (winDiagonal != 0) {
+        Character winDiagonal = winDiagonal();
+        if (winDiagonal != null) {
             return winDiagonal;
         }
 
-        // check if there is a draw
-        if (isFull()) {
-            return 3;
-        }
-
-        return 0;
+        return null;
     }
 
     /**
-     * @return 0 for no winner; 1 for x win; 2 for o win
+     * @return get the map of letter and frequency
      */
-    private int winHorizontal() {
-        int xCount = 0, oCount = 0;
+    private HashMap<Character, Integer> getPlayerMap() {
+        int numberOfPlayers = gameModel.getNumberOfPlayers();
+        HashMap<Character, Integer> players = new HashMap<>();
+        for (int i = 0; i < numberOfPlayers; i++) {
+            players.put(gameModel.getPlayerByNumber(i).getPlayingLetter(), 0);
+        }
+
+        return players;
+    }
+
+    /**
+     * @return the winner's letter; return null when the game is still on
+     */
+    private Character getWinnerLetter(HashMap<Character, Integer> playerMap) {
+        for (Character letter : playerMap.keySet()) {
+            if (playerMap.get(letter).equals(gameModel.getWinThreshold())) {
+                return letter;
+            } else {
+                playerMap.replace(letter, 0);
+            }
+        }
+        return null;
+    }
+
+    /**
+     * @return the Letter of the winner; null for no winner
+     */
+    private Character winHorizontal() {
+        HashMap<Character, Integer> playerMap = getPlayerMap();
         int numRows = gameModel.getNumberOfRows();
         int numColumns = gameModel.getNumberOfColumns();
-
         for (int i = 0; i < numRows; i++) {
             for (int j = 0; j < numColumns; j++) {
-                if (X.equals(getLetter(i, j))) {
-                    xCount++;
-                } else if (O.equals(getLetter(i, j))) {
-                    oCount++;
+                for (Character letter : playerMap.keySet()) {
+                    if (letter.equals(getLetter(i, j))) {
+                        playerMap.replace(letter, playerMap.get(letter) + 1);
+                    }
                 }
             }
 
-            if (xCount == numColumns) {
-                return 1;
-            } else if (oCount == numColumns) {
-                return 2;
-            } else {
-                xCount = oCount = 0;
+            Character winnerLetter = getWinnerLetter(playerMap);
+            if (winnerLetter != null) {
+                return winnerLetter;
             }
         }
 
-        return 0;
+        return null;
     }
 
     /**
-     * @return 0 for no winner; 1 for x win; 2 for o win
+     * @return the Letter of the winner; null for no winner
      */
-    private int winVertical() {
-        int xCount = 0, oCount = 0;
+    private Character winVertical() {
+        HashMap<Character, Integer> playerMap = getPlayerMap();
         int numRows = gameModel.getNumberOfRows();
         int numColumns = gameModel.getNumberOfColumns();
-
         for (int i = 0; i < numColumns; i++) {
             for (int j = 0; j < numRows; j++) {
-                if (X.equals(getLetter(i, j))) {
-                    xCount++;
-                } else if (O.equals(getLetter(i, j))) {
-                    oCount++;
+                for (Character letter : playerMap.keySet()) {
+                    if (letter.equals(getLetter(i, j))) {
+                        playerMap.replace(letter, playerMap.get(letter) + 1);
+                    }
                 }
             }
 
-            if (xCount == numRows) {
-                return 1;
-            } else if (oCount == numRows) {
-                return 2;
-            } else {
-                xCount = oCount = 0;
+            Character winnerLetter = getWinnerLetter(playerMap);
+            if (winnerLetter != null) {
+                return winnerLetter;
             }
         }
 
-        return 0;
+        return null;
     }
 
     /**
-     * @return 0 for no winner; 1 for x win; 2 for o win
+     * @return the Letter of the winner; null for no winner
      */
-    private int winDiagonal() {
-        int xCount = 0, oCount = 0;
+    private Character winDiagonal() {
+        HashMap<Character, Integer> playerMap = getPlayerMap();
         int numRows = gameModel.getNumberOfRows();
+        int numColumns = gameModel.getNumberOfColumns();
+        int winThreshold = gameModel.getWinThreshold();
 
-        for (int i = 0; i < numRows; i++) {
-            if (X.equals(getLetter(i, i))) {
-                xCount++;
-            } else if (O.equals(getLetter(i, i))){
-                oCount++;
+        for (int i = 0; i < numRows - winThreshold; i++) {
+            for (int j = 0; j < numColumns; j++) {
+
             }
         }
-        if (xCount == numRows) {
-            return 1;
-        } else if (oCount == numRows) {
-            return 2;
-        }
 
-        xCount = oCount = 0;
         for (int i = numRows - 1; i >= 0 ; i--) {
             if (X.equals(getLetter(i, i))) {
                 xCount++;
@@ -227,13 +250,13 @@ public class OXOController {
                 oCount++;
             }
         }
-        if (xCount == numRows) {
-            return 1;
-        } else if (oCount == numRows) {
-            return 2;
+        if (xCount == gameModel.getWinThreshold()) {
+            return GAMESTATE.XWIN;
+        } else if (oCount == gameModel.getWinThreshold()) {
+            return GAMESTATE.OWIN;
         }
 
-        return 0;
+        return null;
     }
 
     /**
