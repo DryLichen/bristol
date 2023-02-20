@@ -68,9 +68,4 @@ class ExampleControllerTests {
     // The next line is a bit ugly, but it is the easiest way to test exceptions (soz)
     assertThrows(InvalidIdentifierLengthException.class, ()-> sendCommandToController("abc123"), failedTestComment);
   }
-
-//  @Test
-//  void testOXOExceptions() {
-//    assertThrows();
-//  }
 }

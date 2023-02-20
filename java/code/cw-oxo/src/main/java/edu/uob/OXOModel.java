@@ -83,6 +83,10 @@ public class OXOModel {
         gameDrawn = true;
     }
 
+    public void cancelGameDrawn() {
+        gameDrawn = false;
+    }
+
     public boolean isGameDrawn() {
         return gameDrawn;
     }
