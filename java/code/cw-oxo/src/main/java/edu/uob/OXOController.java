@@ -19,7 +19,7 @@ public class OXOController {
      */
     public void handleIncomingCommand(String command) throws OXOMoveException {
         // only execute the command when the game isn't end
-        if (checkWin() != null || checkDraw()) {
+        if (gameModel.getWinner() != null || checkDraw()) {
             return;
         }
 
@@ -28,9 +28,9 @@ public class OXOController {
             int rowNum = getRowNum(command.charAt(0));
             int columnNum = getColumnNum(command.charAt(1));
 
-            if (rowNum >= gameModel.getNumberOfRows()) {
+            if (rowNum >= gameModel.getNumberOfRows() || rowNum < 0) {
                 throw new OXOMoveException.OutsideCellRangeException(RowOrColumn.ROW, rowNum);
-            } else if (columnNum >= gameModel.getNumberOfColumns()) {
+            } else if (columnNum >= gameModel.getNumberOfColumns() ||  columnNum < 0) {
                 throw new OXOMoveException.OutsideCellRangeException(RowOrColumn.COLUMN, columnNum);
             } else if (gameModel.getCellOwner(rowNum, columnNum) != null) {
                 throw new OXOMoveException.CellAlreadyTakenException(rowNum, columnNum);
@@ -93,9 +93,10 @@ public class OXOController {
      * increase the number of rows by one
      */
     public void addRow() {
-        if (checkWin() == null && gameModel.getNumberOfRows() < 9) {
-            gameModel.addRow();
+        if (gameModel.getNumberOfRows() >= 9) {
+            return;
         }
+        gameModel.addRow();
         checkWin();
         checkDraw();
     }
@@ -104,9 +105,10 @@ public class OXOController {
      * decrease the number of rows by one
      */
     public void removeRow() {
-        if (checkWin() == null && gameModel.getNumberOfRows() > 1) {
-            gameModel.removeRow();
+        if (gameModel.getNumberOfRows() <= 1) {
+            return;
         }
+        gameModel.removeRow();
         checkWin();
         checkDraw();
     }
@@ -115,9 +117,10 @@ public class OXOController {
      * increase the number of columns by one
      */
     public void addColumn() {
-        if (checkWin() == null && gameModel.getNumberOfColumns() < 9) {
-            gameModel.addColumn();
+        if (gameModel.getNumberOfColumns() >= 9) {
+            return;
         }
+        gameModel.addColumn();
         checkWin();
         checkDraw();
     }
@@ -126,9 +129,10 @@ public class OXOController {
      * decrease the number of columns by one
      */
     public void removeColumn() {
-        if (checkWin() == null && gameModel.getNumberOfColumns() > 1) {
-            gameModel.removeColumn();
+        if (gameModel.getNumberOfColumns() <= 1) {
+            return;
         }
+        gameModel.removeColumn();
         checkWin();
         checkDraw();
     }
@@ -192,7 +196,7 @@ public class OXOController {
      * @return true if there is a draw
      */
     private boolean checkDraw() {
-        if (checkWin() != null) {
+        if (gameModel.getWinner() != null) {
             return false;
         }
 

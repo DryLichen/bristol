@@ -17,8 +17,8 @@ public class ControllerTests {
         controller = new OXOController(model);
     }
 
-    void setupMore() {
-        model = new OXOModel(4, 6, 3);
+    void setupMore(int winThreshold) {
+        model = new OXOModel(4, 6, winThreshold);
         model.addPlayer(new OXOPlayer('X'));
         model.addPlayer(new OXOPlayer('O'));
         controller = new OXOController(model);
@@ -67,13 +67,26 @@ public class ControllerTests {
         controller.addPlayer(new OXOPlayer('A'));
         controller.addPlayer(new OXOPlayer('B'));
         int numberOfPlayers = model.getNumberOfPlayers();
-        String failTestComment = "The number of the players should be 4";
-        assertEquals(4, numberOfPlayers, failTestComment);
+        String failComment = "The number of the players should be 4";
+        assertEquals(4, numberOfPlayers, failComment);
+
+        // play a round of game
+        OXOPlayer firstPlayer = model.getPlayerByNumber(0);
+        String command;
+        for (int i = 0; i < model.getNumberOfRows(); i++) {
+            for (int j = 0; j < model.getNumberOfColumns(); j++) {
+                command = Character.toString('a' + i) + (j + 1);
+                sendCommandToController(command);
+            }
+        }
+        OXOPlayer winner = model.getWinner();
+        failComment = "Fail to play a multi-player game";
+        assertEquals(firstPlayer, winner, failComment);
     }
 
     @Test
     void testDraw() {
-        setupMore();
+        setupMore(3);
         String command, failComment;
         for (int i = 0; i < 4; i++) {
             for (int j = 0; j < 6; j++) {
@@ -97,39 +110,143 @@ public class ControllerTests {
         String failComment;
 
         // win horizontally
-        setupMore();
+        setupMore(3);
+        OXOPlayer firstPlayer = model.getPlayerByNumber(model.getCurrentPlayerNumber());
         failComment = "Fail to detect horizontal win";
-        sendCommandToController("");
-
+        sendCommandToController("a1");
+        sendCommandToController("a2");
+        sendCommandToController("a3");
+        sendCommandToController("b1");
+        sendCommandToController("a4");
+        sendCommandToController("b2");
+        sendCommandToController("a5");
+        OXOPlayer winner = model.getWinner();
+        assertEquals(firstPlayer, winner, failComment);
 
         // win vertically
-        setupMore();
+        setupMore(3);
+        firstPlayer = model.getPlayerByNumber(model.getCurrentPlayerNumber());
         failComment = "Fail to detect vertical win";
-
+        sendCommandToController("a1");
+        sendCommandToController("a2");
+        sendCommandToController("a3");
+        sendCommandToController("a4");
+        sendCommandToController("b2");
+        sendCommandToController("b1");
+        sendCommandToController("c2");
+        sendCommandToController("c4");
+        sendCommandToController("d2");
+        winner = model.getWinner();
+        assertEquals(firstPlayer, winner, failComment);
 
         // win diagonally
-        setupMore();
+        setupMore(3);
+        firstPlayer = model.getPlayerByNumber(model.getCurrentPlayerNumber());
         failComment = "Fail to detect diagonal win";
+        sendCommandToController("a1");
+        sendCommandToController("a2");
+        sendCommandToController("b1");
+        sendCommandToController("b2");
+        sendCommandToController("a3");
+        sendCommandToController("a4");
+        sendCommandToController("b4");
+        sendCommandToController("b3");
+        sendCommandToController("c5");
+        winner = model.getWinner();
+        assertEquals(firstPlayer, winner, failComment);
 
+        setupMore(3);
+        failComment = "Fail to detect not win";
+        sendCommandToController("a1");
+        sendCommandToController("a2");
+        sendCommandToController("b2");
+        sendCommandToController("c3");
+        sendCommandToController("d4");
+        winner = model.getWinner();
+        assertEquals(null, winner, failComment);
+    }
+
+    @Test
+    void afterWin() {
+        setup();
+        // can't claim any cell after win
+        OXOPlayer firstPlayer = model.getPlayerByNumber(0);
+        sendCommandToController("a1");
+        sendCommandToController("a2");
+        sendCommandToController("a3");
+        sendCommandToController("b1");
+        sendCommandToController("b2");
+        sendCommandToController("b3");
+        sendCommandToController("c1");
+        sendCommandToController("c1");
+        OXOPlayer winner = model.getWinner();
+        String failComment = "None of the cells can be claimed after win";
+        assertEquals(firstPlayer, winner, failComment);
+        sendCommandToController("c3");
+        assertEquals(null, model.getCellOwner(2, 2), failComment);
     }
 
     @Test
     void testWinThreshold() {
+        setup();
 
+        // decrease win threshold
+        controller.decreaseWinThreshold();
+        int winThreshold = model.getWinThreshold();
+        String failComment = "Fail to decrease win threshold at the beginning of game";
+        assertEquals(3, winThreshold, failComment);
+
+        // increase win threshold
+        controller.increaseWinThreshold();
+        controller.increaseWinThreshold();
+        winThreshold = model.getWinThreshold();
+        failComment = "c";
+        assertEquals(5, winThreshold, failComment);
+
+        // can't decrease win threshold once the game is started
+        sendCommandToController("a1");
+        controller.decreaseWinThreshold();
+        winThreshold = model.getWinThreshold();
+        failComment = "Fail to stop decreasing win threshold after game starting";
+        assertEquals(5, winThreshold,failComment);
+        controller.increaseWinThreshold();
+        winThreshold = model.getWinThreshold();
+        failComment = "Fail to increase win threshold after game starting";
+        assertEquals(6, winThreshold, failComment);
+
+        // the minimum of win threshold is 3
+        setupMore(4);
+        controller.decreaseWinThreshold();
+        winThreshold = model.getWinThreshold();
+        failComment = "Fail to decrease the win threshold";
+        assertEquals(3, winThreshold, failComment);
+
+        controller.decreaseWinThreshold();
+        winThreshold = model.getWinThreshold();
+        failComment = "Fail to control the win threshold";
+        assertEquals(3, winThreshold, failComment);
     }
 
     @Test
     void testReset() {
+        setup();
 
+        // fill the game board
+        String command;
+        for (int i = 0; i < model.getNumberOfRows(); i++) {
+            for (int j = 0; j < model.getNumberOfColumns(); j++) {
+                command = Character.toString('a' + i) + (j + 1);
+                sendCommandToController(command);
+            }
+        }
+
+        controller.reset();
+        String failComment = "Fail to clear the game board";
+        for (int i = 0; i < model.getNumberOfRows(); i++) {
+            for (int j = 0; j < model.getNumberOfColumns(); j++) {
+                assertEquals(null, model.getCellOwner(i, j), failComment);
+            }
+        }
     }
 
-    @Test
-    void testCommand() {
-
-    }
-
-    @Test
-    void testAll() {
-
-    }
 }

@@ -1,6 +1,7 @@
 package edu.uob;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 
 public class OXOModel {
 
@@ -72,6 +73,9 @@ public class OXOModel {
     }
 
     public void setWinThreshold(int winThresh) {
+        if (winThresh < 3) {
+            return;
+        }
         winThreshold = winThresh;
     }
 
@@ -91,7 +95,10 @@ public class OXOModel {
         return gameDrawn;
     }
 
-    void addRow() {
+    public void addRow() {
+        if (getNumberOfRows() >= 9) {
+            return;
+        }
         ArrayList<OXOPlayer> oxoPlayers = new ArrayList<>();
         for (int i = 0; i < getNumberOfColumns(); i++) {
             oxoPlayers.add(null);
@@ -99,17 +106,26 @@ public class OXOModel {
         cells.add(oxoPlayers);
     }
 
-    void addColumn() {
+    public void addColumn() {
+        if (getNumberOfColumns() >= 9) {
+            return;
+        }
         for (int i = 0; i < getNumberOfRows(); i++) {
             cells.get(i).add(null);
         }
     }
 
-    void removeRow() {
+    public void removeRow() {
+        if (getNumberOfRows() <= 1) {
+            return;
+        }
         cells.remove(getNumberOfRows() - 1);
     }
 
-    void removeColumn() {
+    public void removeColumn() {
+        if (getNumberOfColumns() <= 1) {
+            return;
+        }
         for (int i = 0; i < getNumberOfRows(); i++) {
             cells.get(i).remove(getNumberOfColumns() - 1);
         }
