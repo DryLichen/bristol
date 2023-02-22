@@ -79,6 +79,9 @@ public class OXOController {
         return columnNum;
     }
 
+    /**
+     * @return the number of next player
+     */
     private int getNextPlayer() {
         int numberOfPlayers = gameModel.getNumberOfPlayers();
         int playerNum = gameModel.getCurrentPlayerNumber();
@@ -105,12 +108,36 @@ public class OXOController {
      * decrease the number of rows by one
      */
     public void removeRow() {
+        // the minimum of number of rows is 1
         if (gameModel.getNumberOfRows() <= 1) {
             return;
         }
+        // a row can't be removed when there are claimed cells on it
+        if (!isRowEmpty(gameModel.getNumberOfRows() - 1)) {
+            return;
+        }
+        // a row can't be removed when this action leads to a draw
+        if (leadToDraw(gameModel.getNumberOfRows() - 1, gameModel.getNumberOfColumns())) {
+            return;
+        }
+
         gameModel.removeRow();
         checkWin();
         checkDraw();
+    }
+
+    /**
+     * @return if a row is empty, return true; otherwise, return false
+     */
+    private boolean isRowEmpty(int rowNum) {
+        int numColumns = gameModel.getNumberOfColumns();
+        for (int i = 0; i < numColumns; i++) {
+            if (gameModel.getCellOwner(rowNum, i) != null) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**
@@ -129,12 +156,51 @@ public class OXOController {
      * decrease the number of columns by one
      */
     public void removeColumn() {
+        // the minimum of number of columns is 1
         if (gameModel.getNumberOfColumns() <= 1) {
             return;
         }
+        // a row can't be removed when there are claimed cells on it
+        if (!isColumnEmpty(gameModel.getNumberOfColumns() - 1)) {
+            return;
+        }
+        // a column can't be removed when this action leads to a draw
+        if (leadToDraw(gameModel.getNumberOfRows(), gameModel.getNumberOfColumns() - 1)) {
+            return;
+        }
+
         gameModel.removeColumn();
         checkWin();
         checkDraw();
+    }
+
+    /**
+     * @return if a column is empty, return true; otherwise, return false
+     */
+    private boolean isColumnEmpty(int columnNum) {
+        int numRows = gameModel.getNumberOfRows();
+        for (int i = 0; i < numRows; i++) {
+            if (gameModel.getCellOwner(i, columnNum) != null) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * @return if deleting a row or a column leads to a draw, return true; otherwise return false
+     */
+    private boolean leadToDraw(int numRows, int numColumns) {
+        for (int i = 0; i < numRows; i++) {
+            for (int j = 0; j < numColumns; j++) {
+                if (gameModel.getCellOwner(i, j) == null) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
     }
 
     public void increaseWinThreshold() {
@@ -164,28 +230,28 @@ public class OXOController {
     }
 
     /**
-     * @return the Letter of the winner; null for no winner
+     * @return the winner; null for no winner
      */
-    private Character checkWin() {
+    private OXOPlayer checkWin() {
         // win horizontally
-        Character winHorizontal = winHorizontal();
-        if (winHorizontal != null) {
-            gameModel.setWinner(gameModel.getPlayerByNumber(gameModel.getCurrentPlayerNumber()));
-            return winHorizontal;
+        OXOPlayer winnerHorizontal = winHorizontal();
+        if (winnerHorizontal != null) {
+            gameModel.setWinner(winnerHorizontal);
+            return winnerHorizontal;
         }
 
         // win vertically
-        Character winVertical = winVertical();
-        if (winVertical != null) {
-            gameModel.setWinner(gameModel.getPlayerByNumber(gameModel.getCurrentPlayerNumber()));
-            return winVertical;
+        OXOPlayer winnerVertical = winVertical();
+        if (winnerVertical != null) {
+            gameModel.setWinner(winnerVertical);
+            return winnerVertical;
         }
 
         // win diagonally
-        Character winDiagonal = winDiagonal();
-        if (winDiagonal != null) {
-            gameModel.setWinner(gameModel.getPlayerByNumber(gameModel.getCurrentPlayerNumber()));
-            return winDiagonal;
+        OXOPlayer winnerDiagonal = winDiagonal();
+        if (winnerDiagonal != null) {
+            gameModel.setWinner(winnerDiagonal);
+            return winnerDiagonal;
         }
 
         gameModel.setWinner(null);
@@ -205,7 +271,7 @@ public class OXOController {
         int numColumns = gameModel.getNumberOfColumns();
         for (int i = 0; i < numRows; i++) {
             for (int j = 0; j < numColumns; j++) {
-                if (getCellLetter(i, j) != null) {
+                if (gameModel.getCellOwner(i, j) != null) {
                     count++;
                 }
             }
@@ -217,41 +283,42 @@ public class OXOController {
         } else {
             gameModel.cancelGameDrawn();
         }
+
         return false;
     }
 
     /**
      * @return get the map of player's letter and frequency in board
      */
-    private HashMap<Character, Integer> getPlayerMap() {
+    private HashMap<OXOPlayer, Integer> getPlayerMap() {
         int numberOfPlayers = gameModel.getNumberOfPlayers();
-        HashMap<Character, Integer> playerMap = new HashMap<>();
+        HashMap<OXOPlayer, Integer> playerMap = new HashMap<>();
         for (int i = 0; i < numberOfPlayers; i++) {
-            playerMap.put(gameModel.getPlayerByNumber(i).getPlayingLetter(), 0);
+            playerMap.put(gameModel.getPlayerByNumber(i), 0);
         }
 
         return playerMap;
     }
 
     /**
-     * @return the winner's letter; return null when the game is still on
+     * @return the winner; return null when the game is still on
      */
-    private Character getWinnerLetter(HashMap<Character, Integer> playerMap) {
-        for (Character letter : playerMap.keySet()) {
-            if (playerMap.get(letter).equals(gameModel.getWinThreshold())) {
-                return letter;
+    private OXOPlayer getWinner(HashMap<OXOPlayer, Integer> playerMap) {
+        for (OXOPlayer player : playerMap.keySet()) {
+            if (playerMap.get(player).equals(gameModel.getWinThreshold())) {
+                return player;
             } else {
-                playerMap.replace(letter, 0);
+                playerMap.replace(player, 0);
             }
         }
         return null;
     }
 
     /**
-     * @return the Letter of the winner; null for no winner
+     * @return the winner; null for no winner
      */
-    private Character winHorizontal() {
-        HashMap<Character, Integer> playerMap = getPlayerMap();
+    private OXOPlayer winHorizontal() {
+        HashMap<OXOPlayer, Integer> playerMap = getPlayerMap();
         int numRows = gameModel.getNumberOfRows();
         int numColumns = gameModel.getNumberOfColumns();
         int winThreshold = gameModel.getWinThreshold();
@@ -260,18 +327,17 @@ public class OXOController {
             for (int j = 0; j <= numColumns - winThreshold; j++) {
 
                 for (int k = 0; k < winThreshold; k++) {
-                    for (Character letter : playerMap.keySet()) {
-                        if (letter.equals(getCellLetter(i, j + k))) {
-                            playerMap.replace(letter, playerMap.get(letter) + 1);
+                    for (OXOPlayer player : playerMap.keySet()) {
+                        if (player.equals(gameModel.getCellOwner(i, j + k))) {
+                            playerMap.replace(player, playerMap.get(player) + 1);
                         }
                     }
                 }
 
-                Character winnerLetter = getWinnerLetter(playerMap);
-                if (winnerLetter != null) {
-                    return winnerLetter;
+                OXOPlayer winner = getWinner(playerMap);
+                if (winner != null) {
+                    return winner;
                 }
-
             }
         }
 
@@ -279,10 +345,10 @@ public class OXOController {
     }
 
     /**
-     * @return the Letter of the winner; null for no winner
+     * @return the winner; null for no winner
      */
-    private Character winVertical() {
-        HashMap<Character, Integer> playerMap = getPlayerMap();
+    private OXOPlayer winVertical() {
+        HashMap<OXOPlayer, Integer> playerMap = getPlayerMap();
         int numRows = gameModel.getNumberOfRows();
         int numColumns = gameModel.getNumberOfColumns();
         int winThreshold = gameModel.getWinThreshold();
@@ -291,18 +357,17 @@ public class OXOController {
             for (int j = 0; j <= numRows - winThreshold; j++) {
 
                 for (int k = 0; k < winThreshold; k++) {
-                    for (Character letter : playerMap.keySet()) {
-                        if (letter.equals(getCellLetter(j + k, i))) {
-                            playerMap.replace(letter, playerMap.get(letter) + 1);
+                    for (OXOPlayer player : playerMap.keySet()) {
+                        if (player.equals(gameModel.getCellOwner(j + k, i))) {
+                            playerMap.replace(player, playerMap.get(player) + 1);
                         }
                     }
                 }
 
-                Character winnerLetter = getWinnerLetter(playerMap);
-                if (winnerLetter != null) {
-                    return winnerLetter;
+                OXOPlayer winner = getWinner(playerMap);
+                if (winner != null) {
+                    return winner;
                 }
-
             }
         }
 
@@ -310,10 +375,10 @@ public class OXOController {
     }
 
     /**
-     * @return the Letter of the winner; null for no winner
+     * @return the winner; null for no winner
      */
-    private Character winDiagonal() {
-        HashMap<Character, Integer> playerMap = getPlayerMap();
+    private OXOPlayer winDiagonal() {
+        HashMap<OXOPlayer, Integer> playerMap = getPlayerMap();
         int numRows = gameModel.getNumberOfRows();
         int numColumns = gameModel.getNumberOfColumns();
         int winThreshold = gameModel.getWinThreshold();
@@ -322,16 +387,16 @@ public class OXOController {
         for (int i = 0; i <= numRows - winThreshold; i++) {
             for (int j = 0; j <= numColumns - winThreshold; j++) {
                 for (int z = 0; z < winThreshold; z++) {
-                    for (Character letter : playerMap.keySet()) {
-                        if (letter.equals(getCellLetter(i + z, j + z))) {
-                            playerMap.replace(letter, playerMap.get(letter) + 1);
+                    for (OXOPlayer player : playerMap.keySet()) {
+                        if (player.equals(gameModel.getCellOwner(i + z, j + z))) {
+                            playerMap.replace(player, playerMap.get(player) + 1);
                         }
                     }
                 }
 
-                Character winnerLetter = getWinnerLetter(playerMap);
-                if (winnerLetter != null) {
-                    return winnerLetter;
+                OXOPlayer winner = getWinner(playerMap);
+                if (winner != null) {
+                    return winner;
                 }
             }
         }
@@ -340,37 +405,20 @@ public class OXOController {
         for (int i = 0; i <= numRows - winThreshold; i++) {
             for (int j = numColumns - 1; j >= winThreshold - 1; j--) {
                 for (int z = 0; z < winThreshold; z++) {
-                    for (Character letter : playerMap.keySet()) {
-                        if (letter.equals(getCellLetter(i + z, j - z))) {
-                            playerMap.replace(letter, playerMap.get(letter) + 1);
+                    for (OXOPlayer player : playerMap.keySet()) {
+                        if (player.equals(gameModel.getCellOwner(i + z, j - z))) {
+                            playerMap.replace(player, playerMap.get(player) + 1);
                         }
                     }
                 }
 
-                Character winnerLetter = getWinnerLetter(playerMap);
-                if (winnerLetter != null) {
-                    return winnerLetter;
+                OXOPlayer winner = getWinner(playerMap);
+                if (winner != null) {
+                    return winner;
                 }
             }
         }
 
         return null;
-    }
-
-    // return the letter of the owner of one cell
-    private Character getCellLetter(int rowNum, int columnNum) {
-        OXOPlayer cellOwner = gameModel.getCellOwner(rowNum, columnNum);
-        if (cellOwner != null) {
-            return cellOwner.getPlayingLetter();
-        }
-
-        return null;
-    }
-
-    /**
-     * @param oxoPlayer add more players in the game
-     */
-    public void addPlayer(OXOPlayer oxoPlayer) {
-        gameModel.addPlayer(oxoPlayer);
     }
 }

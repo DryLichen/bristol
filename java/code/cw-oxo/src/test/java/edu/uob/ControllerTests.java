@@ -26,8 +26,6 @@ public class ControllerTests {
 
     // This next method is a utility function that can be used by any of the test methods to _safely_ send a command to the controller
     void sendCommandToController(String command) {
-        // Try to send a command to the server - call will timeout if it takes too long (in case the server enters an infinite loop)
-        // Note: this is ugly code and includes syntax that you haven't encountered yet
         String timeoutComment = "Controller took too long to respond (probably stuck in an infinite loop)";
         assertTimeoutPreemptively(Duration.ofMillis(1000), ()-> controller.handleIncomingCommand(command), timeoutComment);
     }
@@ -64,8 +62,8 @@ public class ControllerTests {
     @Test
     void testMultiPlayer() {
         setup();
-        controller.addPlayer(new OXOPlayer('A'));
-        controller.addPlayer(new OXOPlayer('B'));
+        model.addPlayer(new OXOPlayer('A'));
+        model.addPlayer(new OXOPlayer('B'));
         int numberOfPlayers = model.getNumberOfPlayers();
         String failComment = "The number of the players should be 4";
         assertEquals(4, numberOfPlayers, failComment);
@@ -113,10 +111,10 @@ public class ControllerTests {
         setupMore(3);
         OXOPlayer firstPlayer = model.getPlayerByNumber(model.getCurrentPlayerNumber());
         failComment = "Fail to detect horizontal win";
-        sendCommandToController("a1");
-        sendCommandToController("a2");
+        sendCommandToController("A1");
+        sendCommandToController("A2");
         sendCommandToController("a3");
-        sendCommandToController("b1");
+        sendCommandToController("B1");
         sendCommandToController("a4");
         sendCommandToController("b2");
         sendCommandToController("a5");
@@ -129,11 +127,11 @@ public class ControllerTests {
         failComment = "Fail to detect vertical win";
         sendCommandToController("a1");
         sendCommandToController("a2");
-        sendCommandToController("a3");
+        sendCommandToController("A3");
         sendCommandToController("a4");
-        sendCommandToController("b2");
+        sendCommandToController("B2");
         sendCommandToController("b1");
-        sendCommandToController("c2");
+        sendCommandToController("C2");
         sendCommandToController("c4");
         sendCommandToController("d2");
         winner = model.getWinner();
@@ -143,14 +141,14 @@ public class ControllerTests {
         setupMore(3);
         firstPlayer = model.getPlayerByNumber(model.getCurrentPlayerNumber());
         failComment = "Fail to detect diagonal win";
-        sendCommandToController("a1");
+        sendCommandToController("A1");
         sendCommandToController("a2");
         sendCommandToController("b1");
-        sendCommandToController("b2");
+        sendCommandToController("B2");
         sendCommandToController("a3");
-        sendCommandToController("a4");
+        sendCommandToController("A4");
         sendCommandToController("b4");
-        sendCommandToController("b3");
+        sendCommandToController("B3");
         sendCommandToController("c5");
         winner = model.getWinner();
         assertEquals(firstPlayer, winner, failComment);
