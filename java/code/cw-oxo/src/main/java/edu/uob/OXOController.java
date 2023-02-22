@@ -18,7 +18,7 @@ public class OXOController {
      * @throws OXOMoveException
      */
     public void handleIncomingCommand(String command) throws OXOMoveException {
-        // only execute the command when the game isn't end
+        // only analyze commands when the game isn't end
         if (gameModel.getWinner() != null || checkDraw()) {
             return;
         }
@@ -96,11 +96,13 @@ public class OXOController {
      * increase the number of rows by one
      */
     public void addRow() {
+        // the maximum of number of rows is 9
         if (gameModel.getNumberOfRows() >= 9) {
             return;
         }
+        // can't check win after win
+        // only check draw
         gameModel.addRow();
-        checkWin();
         checkDraw();
     }
 
@@ -122,7 +124,6 @@ public class OXOController {
         }
 
         gameModel.removeRow();
-        checkWin();
         checkDraw();
     }
 
@@ -148,7 +149,6 @@ public class OXOController {
             return;
         }
         gameModel.addColumn();
-        checkWin();
         checkDraw();
     }
 
@@ -170,7 +170,6 @@ public class OXOController {
         }
 
         gameModel.removeColumn();
-        checkWin();
         checkDraw();
     }
 

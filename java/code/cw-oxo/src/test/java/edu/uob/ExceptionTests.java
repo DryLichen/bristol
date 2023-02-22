@@ -38,7 +38,7 @@ public class ExceptionTests {
         assertThrows(OXOMoveException.InvalidIdentifierLengthException.class,
                 () -> controller.handleIncomingCommand("a10"), failComment);
         assertThrows(OXOMoveException.InvalidIdentifierLengthException.class,
-                () -> controller.handleIncomingCommand("--+("), failComment);
+                () -> controller.handleIncomingCommand("`--+("), failComment);
         assertThrows(OXOMoveException.InvalidIdentifierLengthException.class,
                 () -> controller.handleIncomingCommand(""), failComment);
     }

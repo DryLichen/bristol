@@ -80,6 +80,28 @@ public class ControllerTests {
         OXOPlayer winner = model.getWinner();
         failComment = "Fail to play a multi-player game";
         assertEquals(firstPlayer, winner, failComment);
+
+        // same letter for different player
+        setup();
+        model.addPlayer(new OXOPlayer('Z'));
+        model.addPlayer(new OXOPlayer('Z'));
+        numberOfPlayers = model.getNumberOfPlayers();
+        failComment = "The number of the players should be 4";
+        assertEquals(4, numberOfPlayers, failComment);
+
+        firstPlayer = model.getPlayerByNumber(0);
+        sendCommandToController("a1");
+        sendCommandToController("a2");
+        sendCommandToController("a3");
+        sendCommandToController("b3");
+        sendCommandToController("b1");
+        sendCommandToController("b2");
+        sendCommandToController("c3");
+        sendCommandToController("c2");
+        sendCommandToController("c1");
+        winner = model.getWinner();
+        failComment = "Fail to play a multi-player game with same letter";
+        assertEquals(firstPlayer, winner, failComment);
     }
 
     @Test
@@ -101,6 +123,13 @@ public class ControllerTests {
         failComment = "Fail to detect draw";
         boolean gameDrawn = model.isGameDrawn();
         assertTrue(gameDrawn, failComment);
+
+        // can't claim cell after draw
+        failComment = "Fail to set current player number";
+        assertEquals(0, model.getCurrentPlayerNumber());
+        sendCommandToController("a2");
+        failComment = "Fail to stop claiming after draw";
+        assertEquals(model.getPlayerByNumber(1), model.getCellOwner(0, 1), failComment);
     }
 
     @Test
@@ -153,6 +182,7 @@ public class ControllerTests {
         winner = model.getWinner();
         assertEquals(firstPlayer, winner, failComment);
 
+        // not win
         setupMore(3);
         failComment = "Fail to detect not win";
         sendCommandToController("a1");
@@ -176,12 +206,29 @@ public class ControllerTests {
         sendCommandToController("b2");
         sendCommandToController("b3");
         sendCommandToController("c1");
-        sendCommandToController("c1");
+
         OXOPlayer winner = model.getWinner();
-        String failComment = "None of the cells can be claimed after win";
+        sendCommandToController("c1");
+        String failComment = "Fail to stop claim the used cells ";
         assertEquals(firstPlayer, winner, failComment);
+        failComment = "None of the cells can be claimed after win";
         sendCommandToController("c3");
         assertEquals(null, model.getCellOwner(2, 2), failComment);
+
+
+        // increase win threshold won't have any effect on win state
+        controller.increaseWinThreshold();
+        controller.addRow();
+        controller.addColumn();
+        controller.increaseWinThreshold();
+        failComment = "Fail to keep win state after increase win threshold";
+        assertEquals(firstPlayer, winner, failComment);
+        failComment = "Fail to increase win threshold after win";
+        assertEquals(5, model.getWinThreshold());
+        failComment = "Fail to increase rows after win";
+        assertEquals(4, model.getNumberOfRows(), failComment);
+        failComment = "Fail to increase columns after win";
+        assertEquals(4, model.getNumberOfColumns(), failComment);
     }
 
     @Test
@@ -245,6 +292,25 @@ public class ControllerTests {
                 assertEquals(null, model.getCellOwner(i, j), failComment);
             }
         }
-    }
+        failComment = "Fail to reset the win state";
+        assertEquals(null, model.getWinner(), failComment);
+        failComment = "Fail to reset current player number";
+        assertEquals(0, model.getCurrentPlayerNumber(), failComment);
 
+        // test about draw
+        setup();
+        controller.increaseWinThreshold();
+        // fill the game board
+        for (int i = 0; i < model.getNumberOfRows(); i++) {
+            for (int j = 0; j < model.getNumberOfColumns(); j++) {
+                command = Character.toString('a' + i) + (j + 1);
+                sendCommandToController(command);
+            }
+        }
+        failComment = "Fail to detect draw";
+        assertTrue(model.isGameDrawn(), failComment);
+        controller.reset();
+        failComment = "Fail to reset draw state";
+        assertFalse(model.isGameDrawn(), failComment);
+    }
 }
