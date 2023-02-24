@@ -1,0 +1,33 @@
+CREATE TEMPORARY TABLE IF NOT EXISTS totalvotes 
+SELECT  SUM(votes) as total
+FROM Candidate 
+INNER JOIN Ward 
+ON Candidate.ward = Ward.id
+INNER JOIN Party 
+ON Party.id = Candidate.party
+WHERE Ward.name = "Southville"
+;
+
+SELECT Candidate.name, 
+             Party.name,
+             Ward.name,
+             Candidate.votes,
+             100.0*SUM(votes)/totalvotes.total as percentage
+FROM Candidate 
+INNER JOIN Ward 
+ON Candidate.ward = Ward.id
+INNER JOIN Party 
+ON Party.id = Candidate.party
+JOIN totalvotes
+WHERE Ward.name = "Southville"
+GROUP BY Candidate.name 
+;
+
+
+SELECT Candidate.name, Party.name, Candidate.votes/
+	(SELECT SUM(Candidate.votes) FROM Candidate INNER JOIN Ward ON Ward.id = Candidate.ward WHERE Ward.name = "Southville") 
+	AS percentage 
+	FROM Candidate INNER JOIN Ward ON Ward.id = Candidate.ward 
+	INNER JOIN Party ON Party.id = Candidate.party 
+	WHERE Ward.name = "Southville" 
+	ORDER BY percentage DESC;

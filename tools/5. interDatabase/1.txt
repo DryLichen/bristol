@@ -1,0 +1,8 @@
+SELECT SUM(votes) FROM Candidate;
+
+SELECT SUM(Candidate.votes) AS votes, 
+	Ward.electorate/SUM(Ward.electorate) AS percentage 
+	FROM Candidate 
+	LEFT JOIN Ward 
+	ON Candidate.ward = Ward.id 
+	WHERE Ward.name = "Windmill Hill";
