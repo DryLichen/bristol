@@ -21,9 +21,6 @@ public class App {
         engine.setTemplateResolver(resolver);
 
         Context c = new Context();
-//        c.setVariable("name", "Software Tools");
-//        List<String> topics = Arrays.asList("Linux", "Git", "Maven");
-//        c.setVariable("topics", topics);
         Unit unit = new Unit("Software Tools", Arrays.asList("Linux", "Git", "Maven"));
         c.setVariable("unit", unit);
         String greeting = engine.process("unit", c);
