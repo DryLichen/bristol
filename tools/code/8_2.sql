@@ -24,8 +24,7 @@ SELECT Candidate.name, Party.name, Candidate.votes
     INNER JOIN Ward
     ON Ward.id = Candidate.ward
     WHERE Ward.name = "Southville"
-    ORDER BY Candidate.votes
-    DESC;
+    ORDER BY Candidate.votes DESC;
 
 SELECT Candidate.name, Party.name, Candidate.votes
     FROM Party
