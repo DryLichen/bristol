@@ -1,8 +1,8 @@
 package edu.uob;
 
-import edu.uob.component.Attribute;
-import edu.uob.component.Relation;
-import edu.uob.component.Tuple;
+import edu.uob.table.Attribute;
+import edu.uob.table.Relation;
+import edu.uob.table.Tuple;
 
 import java.io.*;
 import java.net.ServerSocket;
@@ -11,11 +11,9 @@ import java.nio.file.Paths;
 import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.LinkedList;
-import java.util.List;
 
 /** This class implements the DB server. */
 public class DBServer {
-
     private static final char END_OF_TRANSMISSION = 4;
     private String storageFolderPath;
 
@@ -35,8 +33,6 @@ public class DBServer {
         } catch(IOException ioe) {
             System.out.println("Can't seem to create database storage folder " + storageFolderPath);
         }
-
-
     }
 
     private File getDatabase(String dbName) {

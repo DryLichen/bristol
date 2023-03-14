@@ -1,4 +1,4 @@
-package edu.uob.component;
+package edu.uob.table;
 
 import java.util.LinkedList;
 

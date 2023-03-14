@@ -4,77 +4,96 @@
 <CommandType>     ::=  <Use> | <Create> | <Drop> | <Alter> | <Insert> | <Select> | <Update> | <Delete> | <Join>
 
 <Use>             ::=  "USE " [DatabaseName]
+(set folder path)
 
 <Create>          ::=  <CreateDatabase> | <CreateTable>
 
 <CreateDatabase>  ::=  "CREATE DATABASE " [DatabaseName]
+(create a folder path)
 
 <CreateTable>     ::=  "CREATE TABLE " [TableName] | "CREATE TABLE " [TableName] "(" <AttributeList> ")"
+(create a file)
+(with or without attribute)
 
 <Drop>            ::=  "DROP DATABASE " [DatabaseName] | "DROP TABLE " [TableName]
+(delete a folder)
+(or delete a file)
 
 <Alter>           ::=  "ALTER TABLE " [TableName] " " [AlterationType] " " [AttributeName]
+(read all the tab file into a relation instance)
+(add or delete an attribute in a tab file)
+(write back into tab file)
 
 <Insert>          ::=  "INSERT INTO " [TableName] " VALUES(" <ValueList> ")"
+(read file into a relation instance)
+(add data, add primary id)
+(write back)
 
-<Select>          ::=  "SELECT " <WildAttribList> " FROM " [TableName] | "SELECT " <WildAttribList> " FROM " [TableName] " WHERE " <Condition> 
+<Select>          ::=  "SELECT " <WildAttribList> " FROM " [TableName] | "SELECT " <WildAttribList> " FROM " [TableName] " WHERE " <Condition>
+(read file)
+(print out on Command line)
 
-<Update>          ::=  "UPDATE " [TableName] " SET " <NameValueList> " WHERE " <Condition> 
+<Update>          ::=  "UPDATE " [TableName] " SET " <NameValueList> " WHERE " <Condition>
+(read file)
+(update)
+(write back)
 
 <Delete>          ::=  "DELETE FROM " [TableName] " WHERE " [Condition]
+(read file)
+(delete records, but don't delete primary id; as we can't recycle id)
+(how to say if a record is deleted? There is just a id in a line and a \n, we can get the length of a line and check if it's deleted)
+(write back)
 
 <Join>            ::=  "JOIN " [TableName] " AND " [TableName] " ON " [AttributeName] " AND " [AttributeName]
+()
+
+
 
 [Digit]           ::=  "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"
-
 [Uppercase]       ::=  "A" | "B" | "C" | "D" | "E" | "F" | "G" | "H" | "I" | "J" | "K" | "L" | "M" | "N" | "O" | "P" | "Q" | "R" | "S" | "T" | "U" | "V" | "W" | "X" | "Y" | "Z"
-
 [Lowercase]       ::=  "a" | "b" | "c" | "d" | "e" | "f" | "g" | "h" | "i" | "j" | "k" | "l" | "m" | "n" | "o" | "p" | "q" | "r" | "s" | "t" | "u" | "v" | "w" | "x" | "y" | "z"
-
 [Letter]          ::=  [Uppercase] | [Lowercase]
-
 [PlainText]       ::=  [Letter] | [Digit] | [PlainText] [Letter] | [PlainText] [Digit]
 
-[Symbol]          ::=  "!" | "#" | "$" | "%" | "&" | "(" | ")" | "*" | "+" | "," | "-" | "." | "/" | ":" | ";" | ">" | "=" | "<" | "?" | "@" | "[" | "\" | "]" | "^" | "_" | "`" | "{" | "}" | "~"
+[TableName]       ::=  [PlainText]
+[AttributeName]   ::=  [PlainText] | [TableName] "." [PlainText]
+[DatabaseName]    ::=  [PlainText]
+(NO SPACE AT ALL)
+<WildAttribList>  ::=  <AttributeList> | "*"
+<AttributeList>   ::=  [AttributeName] | [AttributeName] "," <AttributeList>
 
+
+[Symbol]          ::=  "!" | "#" | "$" | "%" | "&" | "(" | ")" | "*" | "+" | "," | "-" | "." | "/" | ":" | ";" | ">" | "=" | "<" | "?" | "@" | "[" | "\" | "]" | "^" | "_" | "`" | "{" | "}" | "~"
 [Space]           ::=  " "
 
 <NameValueList>   ::=  <NameValuePair> | <NameValuePair> "," <NameValueList>
-
 <NameValuePair>   ::=  [AttributeName] "=" [Value]
+
 
 [AlterationType]  ::=  "ADD" | "DROP"
 
+
 <ValueList>       ::=  [Value] | [Value] "," <ValueList>
-
-[DigitSequence]   ::=  [Digit] | [Digit] [DigitSequence]
-
-[IntegerLiteral]  ::=  [DigitSequence] | "-" [DigitSequence] | "+" [DigitSequence] 
-
-[FloatLiteral]    ::=  [DigitSequence] "." [DigitSequence] | "-" [DigitSequence] "." [DigitSequence] | "+" [DigitSequence] "." [DigitSequence]
-
-[BooleanLiteral]  ::=  "TRUE" | "FALSE"
-
-[CharLiteral]     ::=  [Space] | [Letter] | [Symbol] | [Digit]
-
-[StringLiteral]   ::=  "" | [CharLiteral] | [StringLiteral] [CharLiteral]
-
 [Value]           ::=  "'" [StringLiteral] "'" | [BooleanLiteral] | [FloatLiteral] | [IntegerLiteral] | "NULL"
 
-[TableName]       ::=  [PlainText]
+[DigitSequence]   ::=  [Digit] | [Digit] [DigitSequence]
+[IntegerLiteral]  ::=  [DigitSequence] | "-" [DigitSequence] | "+" [DigitSequence]
+[FloatLiteral]    ::=  [DigitSequence] "." [DigitSequence] | "-" [DigitSequence] "." [DigitSequence] | "+" [DigitSequence] "." [DigitSequence]
+[BooleanLiteral]  ::=  "TRUE" | "FALSE"
+[CharLiteral]     ::=  [Space] | [Letter] | [Symbol] | [Digit]
+[StringLiteral]   ::=  "" | [CharLiteral] | [StringLiteral] [CharLiteral]
 
-[AttributeName]   ::=  [PlainText] | [TableName] "." [PlainText]
 
-[DatabaseName]    ::=  [PlainText]
 
-<WildAttribList>  ::=  <AttributeList> | "*"
 
-<AttributeList>   ::=  [AttributeName] | [AttributeName] "," <AttributeList>
+
+
+
 
 <Condition>       ::=  "(" <Condition> [BoolOperator] <Condition> ")" | <Condition> [BoolOperator] <Condition> | "(" [AttributeName] [Comparator] [Value] ")" | [AttributeName] [Comparator] [Value]
-
+(可能也没有括号)
 [BoolOperator]    ::= "AND" | "OR"
-
+(连接两个condition)
 [Comparator]      ::=  "==" | ">" | "<" | ">=" | "<=" | "!=" | " LIKE "
 
 
