@@ -1,4 +1,10 @@
 package edu.uob.command;
 
-public class DeleteCMD {
+import edu.uob.DBServer;
+
+public class DeleteCMD extends DBcmd {
+    @Override
+    public String query(DBServer s) {
+        return null;
+    }
 }

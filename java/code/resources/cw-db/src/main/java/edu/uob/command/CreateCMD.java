@@ -1,4 +1,10 @@
 package edu.uob.command;
 
-public class CreateCMD {
+import edu.uob.DBServer;
+
+public class CreateCMD extends DBcmd {
+    @Override
+    public String query(DBServer s) {
+        return null;
+    }
 }

@@ -1,4 +1,10 @@
 package edu.uob.command;
 
-public class JoinCMD {
+import edu.uob.DBServer;
+
+public class JoinCMD extends DBcmd {
+    @Override
+    public String query(DBServer s) {
+        return null;
+    }
 }

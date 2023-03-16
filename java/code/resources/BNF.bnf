@@ -1,4 +1,3 @@
-
 <Command>         ::=  <CommandType> ";"
 
 <CommandType>     ::=  <Use> | <Create> | <Drop> | <Alter> | <Insert> | <Select> | <Update> | <Delete> | <Join>
@@ -40,12 +39,12 @@
 
 <Delete>          ::=  "DELETE FROM " [TableName] " WHERE " [Condition]
 (read file)
-(delete records, but don't delete primary id; as we can't recycle id)
-(how to say if a record is deleted? There is just a id in a line and a \n, we can get the length of a line and check if it's deleted)
+(delete records, but do not delete primary id; as we cannot recycle id)
+(how to say if a record is deleted? There is just a id in a line and a \n, we can get the length of a line and check if it is deleted)
 (write back)
 
 <Join>            ::=  "JOIN " [TableName] " AND " [TableName] " ON " [AttributeName] " AND " [AttributeName]
-()
+(the first attribute belongs to table1, and the second attribute belongs to table2)
 
 
 
@@ -63,9 +62,6 @@
 <AttributeList>   ::=  [AttributeName] | [AttributeName] "," <AttributeList>
 
 
-[Symbol]          ::=  "!" | "#" | "$" | "%" | "&" | "(" | ")" | "*" | "+" | "," | "-" | "." | "/" | ":" | ";" | ">" | "=" | "<" | "?" | "@" | "[" | "\" | "]" | "^" | "_" | "`" | "{" | "}" | "~"
-[Space]           ::=  " "
-
 <NameValueList>   ::=  <NameValuePair> | <NameValuePair> "," <NameValueList>
 <NameValuePair>   ::=  [AttributeName] "=" [Value]
 
@@ -80,20 +76,16 @@
 [IntegerLiteral]  ::=  [DigitSequence] | "-" [DigitSequence] | "+" [DigitSequence]
 [FloatLiteral]    ::=  [DigitSequence] "." [DigitSequence] | "-" [DigitSequence] "." [DigitSequence] | "+" [DigitSequence] "." [DigitSequence]
 [BooleanLiteral]  ::=  "TRUE" | "FALSE"
-[CharLiteral]     ::=  [Space] | [Letter] | [Symbol] | [Digit]
+
 [StringLiteral]   ::=  "" | [CharLiteral] | [StringLiteral] [CharLiteral]
-
-
-
-
-
+# [Symbol]          ::=  "!" | "#" | "$" | "%" | "&" | "(" | ")" | "*" | "+" | "," | "-" | "." | "/" | ":" | ";" | ">" | "=" | "<" | "?" | "@" | "[" | "\" | "]" | "^" | "_" | "`" | "{" | "}" | "~"
+[Space]           ::=  " "
+[CharLiteral]     ::=  [Space] | [Letter] | [Symbol] | [Digit]
 
 
 
 <Condition>       ::=  "(" <Condition> [BoolOperator] <Condition> ")" | <Condition> [BoolOperator] <Condition> | "(" [AttributeName] [Comparator] [Value] ")" | [AttributeName] [Comparator] [Value]
-(可能也没有括号)
 [BoolOperator]    ::= "AND" | "OR"
-(连接两个condition)
 [Comparator]      ::=  "==" | ">" | "<" | ">=" | "<=" | "!=" | " LIKE "
 
 

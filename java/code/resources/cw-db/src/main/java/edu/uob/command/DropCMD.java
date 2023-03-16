@@ -1,4 +1,10 @@
 package edu.uob.command;
 
-public class DropCMD {
+import edu.uob.DBServer;
+
+public class DropCMD extends DBcmd {
+    @Override
+    public String query(DBServer s) {
+        return null;
+    }
 }

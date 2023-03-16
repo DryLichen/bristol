@@ -1,5 +1,7 @@
 package edu.uob;
 
+import edu.uob.command.DBcmd;
+import edu.uob.parser.Parser;
 import edu.uob.table.Attribute;
 import edu.uob.table.Relation;
 import edu.uob.table.Tuple;
@@ -125,6 +127,8 @@ public class DBServer {
     */
     public String handleCommand(String command) {
         // TODO implement your server logic here
+        Parser parser = new Parser();
+        DBcmd dBcmd = parser.parse();
 
         return "";
     }
