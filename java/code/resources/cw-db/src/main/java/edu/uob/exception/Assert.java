@@ -3,25 +3,20 @@ package edu.uob.exception;
 import edu.uob.parser.Token;
 import edu.uob.parser.TokenType;
 
+import java.io.File;
 import java.util.Arrays;
 import java.util.HashSet;
 
 public class Assert {
-    public static void equalString(String expect, Token token, Response response) throws DBException {
+    public static void equalValue(String expect, Token token, Response response) throws DBException {
         if (!expect.equalsIgnoreCase(token.getTokenValue())) {
             throw new DBException(response);
         }
     }
 
-    public static void isCommand(Token token) throws DBException {
-        if (TokenType.COMMAND_TYPE.equals(token.getTokenType())) {
-            throw new DBException(Response.NOT_COMMAND_TYPE);
-        }
-    }
-
-    public static void isIdentifier(Token token) throws DBException {
-        if (!TokenType.IDENTIFIER.equals(token.getTokenType())) {
-            throw new DBException(Response.NOT_IDENTIFIER);
+    public static void equalType(TokenType tokenType, Token token, Response response) throws DBException {
+        if (!tokenType.equals(token.getTokenType())) {
+            throw new DBException(response);
         }
     }
 
@@ -51,6 +46,12 @@ public class Assert {
                 TokenType.NULL, TokenType.STRING));
         if (!values.contains(token.getTokenType())) {
             throw new DBException(Response.NOT_VALUE);
+        }
+    }
+
+    public static void fileExists(File fileName) throws DBException {
+        if (!fileName.exists()) {
+            throw new DBException(Response.FILE_NOT_EXISTS);
         }
     }
 }

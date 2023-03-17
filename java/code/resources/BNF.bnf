@@ -55,11 +55,11 @@
 [PlainText]       ::=  [Letter] | [Digit] | [PlainText] [Letter] | [PlainText] [Digit]
 
 [TableName]       ::=  [PlainText]
-[AttributeName]   ::=  [PlainText] | [TableName] "." [PlainText]
 [DatabaseName]    ::=  [PlainText]
-(NO SPACE AT ALL)
 <WildAttribList>  ::=  <AttributeList> | "*"
 <AttributeList>   ::=  [AttributeName] | [AttributeName] "," <AttributeList>
+[AttributeName]   ::=  [PlainText] | [TableName] "." [PlainText]
+(NO SPACE AT ALL)
 
 
 <NameValueList>   ::=  <NameValuePair> | <NameValuePair> "," <NameValueList>

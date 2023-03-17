@@ -1,6 +1,7 @@
 package edu.uob.command;
 
 import edu.uob.DBServer;
+import edu.uob.exception.DBException;
 
 import java.util.List;
 
@@ -26,7 +27,7 @@ public abstract class DBcmd {
      * Potentially mutates database server state
      * @return result of query
      */
-    public abstract String query(DBServer s);
+    public abstract String query(DBServer s) throws DBException;
 
     public List<Condition> getConditions() {
         return conditions;

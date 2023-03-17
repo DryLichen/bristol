@@ -12,4 +12,13 @@ public class DBException extends IOException {
     public DBException(Response response) {
         this.message = response.getMessage();
     }
+
+    @Override
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
+    }
 }

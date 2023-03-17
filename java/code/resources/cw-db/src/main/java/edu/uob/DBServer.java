@@ -1,6 +1,7 @@
 package edu.uob;
 
 import edu.uob.command.DBcmd;
+import edu.uob.exception.DBException;
 import edu.uob.parser.Parser;
 import edu.uob.table.Attribute;
 import edu.uob.table.Relation;
@@ -18,6 +19,21 @@ import java.util.LinkedList;
 public class DBServer {
     private static final char END_OF_TRANSMISSION = 4;
     private String storageFolderPath;
+
+    private String databaseName;
+
+    public String getStorageFolderPath() {
+        return storageFolderPath;
+    }
+
+    public String getDatabaseName() {
+        return databaseName;
+    }
+
+    public void setDatabaseName(String databaseName) {
+        this.databaseName = databaseName;
+    }
+
 
     public static void main(String args[]) throws IOException {
         DBServer server = new DBServer();
@@ -37,88 +53,6 @@ public class DBServer {
         }
     }
 
-    private File getDatabase(String dbName) {
-        File file = new File(storageFolderPath + File.separator + dbName);
-        return file;
-    }
-
-    private File getTable(File db, String tableName) {
-        File file = new File(db, File.separator + tableName);
-        return file;
-    }
-
-    // read a table file and return a relation instance
-    private Relation getRelation(File tableFile) {
-        Relation relation = new Relation();
-        relation.setName(tableFile.getPath());
-        FileReader fr = null;
-        BufferedReader bf = null;
-
-        try {
-            fr = new FileReader(tableFile);
-            bf = new BufferedReader(fr);
-            String record = null;
-            try {
-                record = bf.readLine();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-            if (record == null) {
-                return relation;
-            }
-
-            // fill attributes
-            LinkedList<Attribute> attributeList = new LinkedList<>();
-            String[] attributes = record.split("\t");
-            for (int i = 0; i < attributes.length; i++) {
-                Attribute attribute = new Attribute();
-                attribute.setName(attributes[i]);
-                attributeList.add(attribute);
-            }
-            relation.setAttributes(attributeList);
-
-            // fill tuples
-            try {
-                record = bf.readLine();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            LinkedList<Tuple> tupleList = new LinkedList<>();
-
-            while (record != null) {
-                Tuple tuple = new Tuple();
-                String[] words = record.split("\t");
-                tuple.setPrimaryId(Integer.valueOf(words[0]));
-                // check whether the record is deleted
-                if (words.length != 1) {
-                    LinkedList<String> tupleData = new LinkedList<>(Arrays.asList(words));
-                    tupleData.remove(0);
-                    tuple.setData(tupleData);
-                }
-                tupleList.add(tuple);
-
-                try {
-                    record = bf.readLine();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-
-            relation.setTuples(tupleList);
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                bf.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-
-        return relation;
-    }
-
     /**
     * KEEP this signature (i.e. {@code edu.uob.DBServer.handleCommand(String)}) otherwise we won't be
     * able to mark your submission correctly.
@@ -126,9 +60,19 @@ public class DBServer {
     * <p>This method handles all incoming DB commands and carries out the required actions.
     */
     public String handleCommand(String command) {
-        // TODO implement your server logic here
         Parser parser = new Parser();
-        DBcmd dBcmd = parser.parse();
+        parser.setCommand(command);
+
+        try {
+            DBcmd dBcmd = parser.parse();
+            String result = dBcmd.query(this);
+            return result;
+        } catch (DBException e) {
+            if (e.getMessage() != null) {
+                System.out.println("DBEXCEPTIOn");
+                return e.getMessage();
+            }
+        }
 
         return "";
     }
