@@ -1,5 +1,6 @@
 package edu.uob.parser;
 
+import edu.uob.comman.Utils;
 import edu.uob.exception.DBException;
 
 import java.util.ArrayList;
@@ -90,40 +91,20 @@ public class Tokenizer {
                 tokenList.add(new Token(TokenType.NULL, token));
             } else if (token.startsWith("'") && token.endsWith("'")) {
                 tokenList.add(new Token(TokenType.STRING, token));
-            } else if (checkInt(token)) {
-                tokenList.add(new Token(TokenType.INTEGER, token));
-            } else if (checkFloat(token)) {
-                tokenList.add(new Token(TokenType.FLOAT, token));
             } else if (checkIdentifier(token)) {
                 tokenList.add(new Token(TokenType.IDENTIFIER, token));
             } else if (checkTableAttribute(token)) {
                 tokenList.add(new Token(TokenType.TABLE_ATTRIBUTE, token));
             } else if (checkWildAttribute(token)) {
                 tokenList.add(new Token(TokenType.WILD_ATTRIBUTE, token));
+            } else if (Utils.checkInt(token)) {
+                tokenList.add(new Token(TokenType.INTEGER, token));
+            } else if (Utils.checkFloat(token)) {
+                tokenList.add(new Token(TokenType.FLOAT, token));
             } else {
                 throw new DBException("[ERROR]: Invalid token: " + token);
             }
         }
-    }
-
-    private boolean checkInt(String token) {
-        try {
-            Integer.parseInt(token);
-        } catch (NumberFormatException e) {
-            return false;
-        }
-
-        return true;
-    }
-
-    private boolean checkFloat(String token) {
-        try {
-            Float.parseFloat(token);
-        } catch (NumberFormatException e) {
-            return false;
-        }
-
-        return true;
     }
 
     private boolean checkIdentifier(String token) {

@@ -10,6 +10,7 @@ public class UpdateCMD extends DBcmd {
      */
     @Override
     public String query(DBServer s) {
-        return null;
+
+        return "[OK]";
     }
 }

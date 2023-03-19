@@ -26,7 +26,7 @@ public class Token {
         operators.addAll(Arrays.asList("==", ">", "<", ">=", "<=", "!=", " LIKE ", "=", "AND", "OR"));
 
         booleans = new ArrayList<>();
-        booleans.addAll(Arrays.asList("TURE", "FALSE"));
+        booleans.addAll(Arrays.asList("TRUE", "FALSE"));
 
         specialChars = new ArrayList<>();
         specialChars.addAll(Arrays.asList("(", ")", ",", ";"));

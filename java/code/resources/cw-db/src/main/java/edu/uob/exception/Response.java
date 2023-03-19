@@ -8,10 +8,14 @@ public enum Response {
 
     NOT_TABLE_KEY("[ERROR]: Expect a TABLE key word"),
     NOT_DATABASE_KEY("[ERROR]: Expect a DATABASE key word"),
+    NOT_DATABASE_TABLE("[ERROR]: Expect a DATABASE or TABLE key word"),
     NOT_INTO_KEY("[ERROR]: Expect a INTO key word"),
-    NOT_VALUES_KEY("[ERROR]: Expect a VALUE key word"),
+    NOT_VALUES_KEY("[ERROR]: Expect a VALUES key word"),
     NOT_FROM_KEY("[ERROR]: Expect a FROM key word"),
     NOT_SET_KEY("[ERROR]: Expect a SET key word"),
+    NOT_WHERE_KEY("[ERROR]: Expect a WHERE key word"),
+    NOT_AND_KEY("[ERROR]: Expect a AND key word"),
+    NOT_ON_KEY("[ERROR]: Expect a ON key word"),
 
     NOT_COMMAND_TYPE("[ERROR]: Invalid command type: "),
     NOT_IDENTIFIER("[ERROR]: Expect an identifier"),
@@ -23,7 +27,32 @@ public enum Response {
     WRONG_ATTR_LIST("[ERROR]: Wrong format of attribute lists"),
     WRONG_VALUE_LIST("[ERROR]: Wrong format of value list"),
 
-    FILE_NOT_EXISTS("[ERROR]: The databases folder doesn't exist")
+    // mainly for use command
+    DB_NOT_EXIST("[ERROR]: The database doesn't exist"),
+    TABLE_NOT_EXIST("[ERROR]: The table doesn't exist"),
+
+    // mainly for create command
+    CREATE_EXIST_DB("[ERROR]: Fail to create an existing database"),
+    CREATE_EXIST_TABLE("[ERROR]: Fail to create an existing table"),
+    DB_NOT_SPECIFIED("[ERROR]: Please specify a database"),
+    INITIATE_ID("[ERROR]: Id is handled by server automatically"),
+    DUPLICATE_ATTR("[ERROR]: The attribute already exists"),
+
+    // mainly for insert command
+    NOT_COMPATIBLE_VALUES("[ERROR]: Too many (or too few) values for table"),
+    EMPTY_TABLE("[ERROR]: Table is empty"),
+    GENERATE_ID_FAIL("[ERROR]: Can not generate the next id"),
+
+    // mainly for alter command
+    FORBID_DROP_ID("[ERROR]: Can not drop id column"),
+    ATTR_NOT_EXIST("[ERROR]: Cannot delete an nonexistent attribute"),
+
+    // error related to IO operations
+    CREATE_TABLE_FAIL("[ERROR: Fail to create table file"),
+    WRITE_TABLE_FAIL("[ERROR]: Fail to write into table file"),
+    DROP_DB_FAIL("[ERROR]: Fail to delete the database directory"),
+    DROP_TABLE_FAIL("[ERROR]: Fail to delete the table file"),
+    READ_TABLE_FAIL("[ERROR]: Fail to read the table file"),
     ;
 
 

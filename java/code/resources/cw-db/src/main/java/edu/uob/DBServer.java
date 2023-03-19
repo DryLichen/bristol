@@ -1,37 +1,30 @@
 package edu.uob;
 
 import edu.uob.command.DBcmd;
-import edu.uob.exception.DBException;
 import edu.uob.parser.Parser;
-import edu.uob.table.Attribute;
-import edu.uob.table.Relation;
-import edu.uob.table.Tuple;
 
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.file.Paths;
 import java.nio.file.Files;
-import java.util.Arrays;
-import java.util.LinkedList;
 
 /** This class implements the DB server. */
 public class DBServer {
     private static final char END_OF_TRANSMISSION = 4;
     private String storageFolderPath;
-
-    private String databaseName;
+    private String specifiedDb;
 
     public String getStorageFolderPath() {
         return storageFolderPath;
     }
 
-    public String getDatabaseName() {
-        return databaseName;
+    public String getSpecifiedDb() {
+        return specifiedDb;
     }
 
-    public void setDatabaseName(String databaseName) {
-        this.databaseName = databaseName;
+    public void setSpecifiedDb(String databaseName) {
+        this.specifiedDb = databaseName;
     }
 
 
@@ -67,40 +60,14 @@ public class DBServer {
             DBcmd dBcmd = parser.parse();
             String result = dBcmd.query(this);
             return result;
-        } catch (DBException e) {
+        } catch (IOException e) {
             if (e.getMessage() != null) {
-                System.out.println("DBEXCEPTIOn");
                 return e.getMessage();
             }
         }
 
         return "";
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
     //  === Methods below handle networking aspects of the project - you will not need to change these ! ===

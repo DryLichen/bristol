@@ -7,12 +7,12 @@ import edu.uob.exception.Response;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 
 public class Parser {
     private String command;
     private Tokenizer tokenizer;
-    private DBcmd dBcmd;
 
     /**
      * @return parse tokens and initiate DBcmd instances
@@ -55,9 +55,9 @@ public class Parser {
         if ("SELECT".equalsIgnoreCase(commandType)) {
             return getSelectCmd(tokens);
         }
-//        if ("UPDATE".equalsIgnoreCase(commandType)) {
-//            return getUpdateCmd(tokens);
-//        }
+        if ("UPDATE".equalsIgnoreCase(commandType)) {
+            return getUpdateCmd(tokens);
+        }
         if ("DELETE".equalsIgnoreCase(commandType)) {
             return getDeleteCmd(tokens);
         }
@@ -68,6 +68,9 @@ public class Parser {
         return null;
     }
 
+    /**
+     * @return a useCMD with database name
+     */
     private UseCMD getUseCmd(List<Token> tokens) throws DBException {
         UseCMD useCMD = new UseCMD();
         useCMD.setCommandType("USE");
@@ -79,6 +82,10 @@ public class Parser {
         return useCMD;
     }
 
+    /**
+     * @return a createCMD with database name or a table name.
+     * when creating a table, attributes can be initiated or not.
+     */
     private CreateCMD getCreateCmd(List<Token> tokens) throws DBException {
         CreateCMD createCMD = new CreateCMD();
         createCMD.setCommandType("CREATE");
@@ -97,11 +104,11 @@ public class Parser {
             if (size >= 7) {
                 setAttributes(createCMD, tokens);
             } else {
+                Assert.equalType(TokenType.IDENTIFIER, tokens.get(2), Response.NOT_IDENTIFIER);
                 Assert.correctParamNum(4, size);
             }
         } else {
-            throw new DBException(Response.NOT_TABLE_KEY.getMessage() +
-                    " or " + Response.NOT_DATABASE_KEY.getMessage());
+            throw new DBException(Response.NOT_DATABASE_TABLE);
         }
 
         return createCMD;
@@ -131,9 +138,21 @@ public class Parser {
                 columns.add(tokens.get(i).getTokenValue());
             }
         }
+
+        // check duplicate column names
+        HashSet<Object> set = new HashSet<>();
+        set.add("id");
+        for (String column : columns) {
+            Assert.isTrue(!"id".equalsIgnoreCase(column), Response.INITIATE_ID);
+            Assert.isTrue(set.add(column.toLowerCase()), Response.DUPLICATE_ATTR);
+        }
+
         createCMD.setColumnNames(columns);
     }
 
+    /**
+     * @return dropCMD with database name or a table name
+     */
     private DropCMD getDropCmd(List<Token> tokens) throws DBException {
         DropCMD dropCMD = new DropCMD();
         dropCMD.setCommandType("DROP");
@@ -148,13 +167,15 @@ public class Parser {
             Assert.equalType(TokenType.IDENTIFIER, tokens.get(2), Response.NOT_IDENTIFIER);
             dropCMD.setTableNames(new ArrayList<>(Arrays.asList(tokens.get(2).getTokenValue())));
         } else {
-            throw new DBException(Response.NOT_TABLE_KEY.getMessage() +
-                    " or " + Response.NOT_DATABASE_KEY.getMessage());
+            throw new DBException(Response.NOT_DATABASE_TABLE);
         }
 
         return dropCMD;
     }
 
+    /**
+     * @return an alterCMD with table name, alter type and column name
+     */
     private AlterCMD getAlterCmd(List<Token> tokens) throws DBException {
         AlterCMD alterCMD = new AlterCMD();
         alterCMD.setCommandType("ALTER");
@@ -173,6 +194,9 @@ public class Parser {
         return alterCMD;
     }
 
+    /**
+     * @return insertCMD with table name and a list of values
+     */
     private InsertCMD getInsertCmd(List<Token> tokens) throws DBException {
         InsertCMD insertCMD = new InsertCMD();
         insertCMD.setCommandType("INSERT");
@@ -183,7 +207,7 @@ public class Parser {
 
         Assert.equalValue("INTO", tokens.get(1), Response.NOT_INTO_KEY);
         Assert.equalType(TokenType.IDENTIFIER, tokens.get(2), Response.NOT_IDENTIFIER);
-        Assert.equalValue("VALUE", tokens.get(3), Response.NOT_VALUES_KEY);
+        Assert.equalValue("VALUES", tokens.get(3), Response.NOT_VALUES_KEY);
         Assert.equalValue("(", tokens.get(4), Response.NOT_LEFT_BRACKET);
         Assert.equalValue(")", tokens.get(size - 2), Response.NOT_RIGHT_BRACKET);
 
@@ -216,6 +240,10 @@ public class Parser {
         insertCMD.setValueList(values);
     }
 
+    /**
+     * @return a selectCMD with attributes, table name and conditions.
+     * conditions can be null
+     */
     private SelectCMD getSelectCmd(List<Token> tokens) throws DBException {
         SelectCMD selectCMD = new SelectCMD();
         selectCMD.setCommandType("SELECT");
@@ -247,56 +275,76 @@ public class Parser {
         return selectCMD;
     }
 
-//    private UpdateCMD getUpdateCmd(List<Token> tokens) throws DBException {
-//        UpdateCMD updateCMD = new UpdateCMD();
-//        updateCMD.setCommandType("UPDATE");
-//        int size = tokens.size();
-////        if (size < ) {
-////            throw new DBException(Response.WRONG_PARAMETER_NUM.getMessage() + size);
-////        }
-//
-//        Assert.equalType(TokenType.IDENTIFIER, tokens.get(1), Response.NOT_IDENTIFIER);
-//        Assert.equalValue("SET", tokens.get(2), Response.NOT_SET_KEY);
-//
-//        setNameValues(updateCMD, tokens);
-//
-//        return updateCMD;
-//    }
-
-//    private int setNameValues(UpdateCMD updateCMD, List<Token> tokens) {
-//        for (int i = 3; i < tokens.size(); i+=3) {
-//            // every three items as a pair
-//            tokens.get(i)
+    /**
+     * @return a updateCMD with table name, nameValuePairs, and conditions
+     */
+    private UpdateCMD getUpdateCmd(List<Token> tokens) throws DBException {
+        UpdateCMD updateCMD = new UpdateCMD();
+        updateCMD.setCommandType("UPDATE");
+        int size = tokens.size();
+//        if (size < ) {
+//            throw new DBException(Response.WRONG_PARAMETER_NUM.getMessage() + size);
 //        }
-//    }
 
+        Assert.equalType(TokenType.IDENTIFIER, tokens.get(1), Response.NOT_IDENTIFIER);
+        Assert.equalValue("SET", tokens.get(2), Response.NOT_SET_KEY);
+
+//        setNameValues(updateCMD, tokens);
+
+        return updateCMD;
+    }
+
+    /**
+     * @return a deleteCMD with table name and conditions
+     */
     private DeleteCMD getDeleteCmd(List<Token> tokens) throws DBException {
         DeleteCMD deleteCMD = new DeleteCMD();
         deleteCMD.setCommandType("DELETE");
         int size = tokens.size();
-//        if (size < ) {
-//            throw new DBException(Response.WRONG_PARAMETER_NUM.getMessage() + size);
-//        }
+        if (size < 8) {
+            throw new DBException(Response.WRONG_PARAMETER_NUM.getMessage() + size);
+        }
 
+        Assert.equalValue("FROM", tokens.get(1), Response.NOT_FROM_KEY);
+        Assert.equalType(TokenType.IDENTIFIER, tokens.get(2), Response.NOT_IDENTIFIER);
+        Assert.equalValue("WHERE", tokens.get(3), Response.NOT_WHERE_KEY);
+        // conditions
+
+
+        deleteCMD.setTableNames(new ArrayList<>(Arrays.asList(tokens.get(2).getTokenValue())));
         return deleteCMD;
     }
 
+    /**
+     * @return a joinCMD with table names and column names
+     */
     private JoinCMD getJoinCmd(List<Token> tokens) throws DBException {
         JoinCMD joinCMD = new JoinCMD();
         joinCMD.setCommandType("JOIN");
         int size = tokens.size();
-//        if (size < ) {
-//            throw new DBException(Response.WRONG_PARAMETER_NUM.getMessage() + size);
-//        }
+        if (size < 9) {
+            throw new DBException(Response.WRONG_PARAMETER_NUM.getMessage() + size);
+        }
+
+        Assert.equalType(TokenType.IDENTIFIER, tokens.get(1), Response.NOT_IDENTIFIER);
+        Assert.equalValue("AND", tokens.get(2), Response.NOT_AND_KEY);
+        Assert.equalType(TokenType.IDENTIFIER, tokens.get(3), Response.NOT_IDENTIFIER);
+        Assert.equalValue("ON", tokens.get(4), Response.NOT_ON_KEY);
+        Assert.isAttribute(tokens.get(5));
+        Assert.equalValue("AND", tokens.get(6), Response.NOT_AND_KEY);
+        Assert.isAttribute(tokens.get(7));
+
+        joinCMD.setTableNames(new ArrayList<>(
+                Arrays.asList(tokens.get(1).getTokenValue(), tokens.get(3).getTokenValue())
+        ));
+        joinCMD.setColumnNames(new ArrayList<>(
+                Arrays.asList(tokens.get(5).getTokenValue(), tokens.get(7).getTokenValue())
+        ));
 
         return joinCMD;
     }
 
     public void setCommand(String command) {
         this.command = command;
-    }
-
-    public String getCommand() {
-        return command;
     }
 }

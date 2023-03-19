@@ -8,7 +8,7 @@ import java.util.LinkedList;
  */
 public class Tuple {
     private Integer primaryId;
-    private LinkedList<String> data;
+    private LinkedList<String> data = new LinkedList<>();
 
     public Tuple() {
     }

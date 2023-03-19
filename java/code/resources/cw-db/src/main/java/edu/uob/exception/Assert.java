@@ -1,5 +1,6 @@
 package edu.uob.exception;
 
+import edu.uob.comman.Utils;
 import edu.uob.parser.Token;
 import edu.uob.parser.TokenType;
 
@@ -44,14 +45,28 @@ public class Assert {
         HashSet<TokenType> values = new HashSet<>();
         values.addAll(Arrays.asList(TokenType.BOOLEAN, TokenType.FLOAT, TokenType.INTEGER,
                 TokenType.NULL, TokenType.STRING));
-        if (!values.contains(token.getTokenType())) {
+        if (!values.contains(token.getTokenType()) &&
+                !Utils.checkInt(token.getTokenValue()) &&
+                !Utils.checkFloat(token.getTokenValue())) {
             throw new DBException(Response.NOT_VALUE);
         }
     }
 
-    public static void fileExists(File fileName) throws DBException {
+    public static void fileExists(File fileName, Response response) throws DBException {
         if (!fileName.exists()) {
-            throw new DBException(Response.FILE_NOT_EXISTS);
+            throw new DBException(response);
+        }
+    }
+
+    public static void notNull(Object object, Response response) throws DBException {
+        if (object == null) {
+            throw new DBException(response);
+        }
+    }
+
+    public static void isTrue(Boolean bool, Response response) throws DBException {
+        if (!bool) {
+            throw new DBException(response);
         }
     }
 }

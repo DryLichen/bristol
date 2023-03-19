@@ -4,13 +4,14 @@ import java.util.LinkedList;
 
 public class Relation {
     private String name;
-    private LinkedList<Attribute> attributes;
-    private LinkedList<Tuple> tuples;
+    // attributes include id
+    private LinkedList<String> attributes = new LinkedList<>();
+    private LinkedList<Tuple> tuples = new LinkedList<>();
 
     public Relation() {
     }
 
-    public Relation(String name, LinkedList<Attribute> attributes, LinkedList<Tuple> tuples) {
+    public Relation(String name, LinkedList<String> attributes, LinkedList<Tuple> tuples) {
         this.name = name;
         this.attributes = attributes;
         this.tuples = tuples;
@@ -24,11 +25,11 @@ public class Relation {
         this.name = name;
     }
 
-    public LinkedList<Attribute> getAttributes() {
+    public LinkedList<String> getAttributes() {
         return attributes;
     }
 
-    public void setAttributes(LinkedList<Attribute> attributes) {
+    public void setAttributes(LinkedList<String> attributes) {
         this.attributes = attributes;
     }
 
