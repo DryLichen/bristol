@@ -19,10 +19,6 @@ public class InsertCMD extends DBcmd {
         this.valueList = valueList;
     }
 
-    public ArrayList<String> getValueList() {
-        return valueList;
-    }
-
     @Override
     public String query(DBServer s) throws DBException {
         // a database must be set before and the table exists
@@ -33,9 +29,10 @@ public class InsertCMD extends DBcmd {
         File tableFile = fileIO.getTable(root, specifiedDb, getTableNames().get(0));
         Assert.fileExists(tableFile, Response.TABLE_NOT_EXIST);
 
-        // get basic information about attributes
+        // get relation from table file
         Relation relation = fileIO.getRelationFromFile(tableFile);
         LinkedList<String> attributes = relation.getAttributes();
+        LinkedList<Tuple> tuples = relation.getTuples();
         // table must have attributes
         Assert.isTrue(attributes.size() > 0, Response.EMPTY_TABLE);
         // check if the number of values is coherent with the attributes
@@ -44,7 +41,7 @@ public class InsertCMD extends DBcmd {
         // insert data to relation
         Tuple tuple = new Tuple();
         tuple.setData(new LinkedList<>(valueList));
-        LinkedList<Tuple> tuples = relation.getTuples();
+
         // set primary key from 1 if there is no tuple
         if (tuples.size() == 0) {
             tuple.setPrimaryId(1);

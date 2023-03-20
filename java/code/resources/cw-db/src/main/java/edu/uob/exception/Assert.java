@@ -22,8 +22,7 @@ public class Assert {
     }
 
     public static void isAttribute(Token token) throws DBException {
-        if (!TokenType.IDENTIFIER.equals(token.getTokenType()) &&
-                !TokenType.TABLE_ATTRIBUTE.equals(token.getTokenType())) {
+        if (!Utils.isAttribute(token)) {
             throw new DBException(Response.NOT_ATTRIBUTE);
         }
     }
@@ -42,12 +41,7 @@ public class Assert {
     }
 
     public static void isValue(Token token) throws DBException {
-        HashSet<TokenType> values = new HashSet<>();
-        values.addAll(Arrays.asList(TokenType.BOOLEAN, TokenType.FLOAT, TokenType.INTEGER,
-                TokenType.NULL, TokenType.STRING));
-        if (!values.contains(token.getTokenType()) &&
-                !Utils.checkInt(token.getTokenValue()) &&
-                !Utils.checkFloat(token.getTokenValue())) {
+        if (!Utils.isValue(token)) {
             throw new DBException(Response.NOT_VALUE);
         }
     }

@@ -83,6 +83,8 @@ public class Tokenizer {
                 tokenList.add(new Token(TokenType.KEY_WORD, token));
             } else if (Token.operators.stream().anyMatch(i -> i.equalsIgnoreCase(token))) {
                 tokenList.add(new Token(TokenType.OPERATOR, token));
+            } else if (Token.comparators.stream().anyMatch(i -> i.equalsIgnoreCase(token))) {
+                tokenList.add(new Token(TokenType.COMPARATOR, token));
             } else if (Token.booleans.stream().anyMatch(i -> i.equalsIgnoreCase(token))) {
                 tokenList.add(new Token(TokenType.BOOLEAN, token));
             } else if (Token.specialChars.stream().anyMatch(i -> i.equalsIgnoreCase(token))) {
@@ -91,12 +93,12 @@ public class Tokenizer {
                 tokenList.add(new Token(TokenType.NULL, token));
             } else if (token.startsWith("'") && token.endsWith("'")) {
                 tokenList.add(new Token(TokenType.STRING, token));
-            } else if (checkIdentifier(token)) {
-                tokenList.add(new Token(TokenType.IDENTIFIER, token));
-            } else if (checkTableAttribute(token)) {
+            }else if (checkTableAttribute(token)) {
                 tokenList.add(new Token(TokenType.TABLE_ATTRIBUTE, token));
             } else if (checkWildAttribute(token)) {
                 tokenList.add(new Token(TokenType.WILD_ATTRIBUTE, token));
+            } else if (checkIdentifier(token)) {
+                tokenList.add(new Token(TokenType.IDENTIFIER, token));
             } else if (Utils.checkInt(token)) {
                 tokenList.add(new Token(TokenType.INTEGER, token));
             } else if (Utils.checkFloat(token)) {

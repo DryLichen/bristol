@@ -6,7 +6,7 @@ import edu.uob.exception.DBException;
 import java.util.List;
 
 public abstract class DBcmd {
-    protected List<Condition> conditions;
+    protected Condition condition;
     protected List<String> columnNames;
     protected List<String> tableNames;
     protected String DBname;
@@ -15,26 +15,18 @@ public abstract class DBcmd {
     public DBcmd() {
     }
 
-    public DBcmd(List<Condition> conditions, List<String> columnNames, List<String> tableNames, String DBname, String commandType) {
-        this.conditions = conditions;
-        this.columnNames = columnNames;
-        this.tableNames = tableNames;
-        this.DBname = DBname;
-        this.commandType = commandType;
-    }
-
     /**
      * Potentially mutates database server state
      * @return result of query
      */
     public abstract String query(DBServer s) throws DBException;
 
-    public List<Condition> getConditions() {
-        return conditions;
+    public Condition getCondition() {
+        return condition;
     }
 
-    public void setConditions(List<Condition> conditions) {
-        this.conditions = conditions;
+    public void setCondition(Condition condition) {
+        this.condition = condition;
     }
 
     public List<String> getColumnNames() {

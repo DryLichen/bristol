@@ -10,6 +10,7 @@ public class Token {
     public static ArrayList<String> commandTypes;
     public static ArrayList<String> keyWords;
     public static ArrayList<String> operators;
+    public static ArrayList<String> comparators;
     public static ArrayList<String> booleans;
     public static ArrayList<String> specialChars;
 
@@ -20,13 +21,14 @@ public class Token {
 
         keyWords = new ArrayList<>();
         keyWords.addAll(Arrays.asList("DATABASE", "TABLE", "INTO", "VALUES", "FROM",
-                "SET", "WHERE", "ON", "ADD", "DROP"));
+                "SET", "WHERE", "ON", "ADD", "DROP", "="));
 
-        operators = new ArrayList<>();
-        operators.addAll(Arrays.asList("==", ">", "<", ">=", "<=", "!=", " LIKE ", "=", "AND", "OR"));
+        comparators = new ArrayList<>();
+        comparators.addAll(Arrays.asList("==", ">", "<", ">=", "<=", "!=", " LIKE "));
 
-        booleans = new ArrayList<>();
-        booleans.addAll(Arrays.asList("TRUE", "FALSE"));
+        operators = new ArrayList<>(Arrays.asList("AND", "OR"));
+
+        booleans = new ArrayList<>(Arrays.asList("TRUE", "FALSE"));
 
         specialChars = new ArrayList<>();
         specialChars.addAll(Arrays.asList("(", ")", ",", ";"));

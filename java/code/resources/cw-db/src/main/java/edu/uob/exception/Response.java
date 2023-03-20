@@ -45,7 +45,12 @@ public enum Response {
 
     // mainly for alter command
     FORBID_DROP_ID("[ERROR]: Can not drop id column"),
-    ATTR_NOT_EXIST("[ERROR]: Cannot delete an nonexistent attribute"),
+    ATTR_NOT_EXIST("[ERROR]: Attribute required doesn't exist"),
+
+    //mainly for condition command
+    WRONG_FORMAT_CONDITION("[ERROR]: Format of conditions is incorrect"),
+    NOT_COMPARATOR("[ERROR]: a comparator must follow a name"),
+
 
     // error related to IO operations
     CREATE_TABLE_FAIL("[ERROR: Fail to create table file"),

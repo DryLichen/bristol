@@ -1,14 +1,12 @@
 package edu.uob.parser;
 
+import edu.uob.comman.Utils;
 import edu.uob.command.*;
 import edu.uob.exception.Assert;
 import edu.uob.exception.DBException;
 import edu.uob.exception.Response;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 
 public class Parser {
     private String command;
@@ -229,8 +227,14 @@ public class Parser {
         for (int i = 5; i < size - 2; i++) {
             // check if odd indexes refer to value
             if (i % 2 != 0) {
-                Assert.isValue(tokens.get(i));
-                values.add(tokens.get(i).getTokenValue());
+                Token token = tokens.get(i);
+                Assert.isValue(token);
+                // delete the single quotes for string value
+                if (token.getTokenType() == TokenType.STRING) {
+                    String tokenValue = token.getTokenValue();
+                    token.setTokenValue(tokenValue.substring(1, tokenValue.length() - 1));
+                }
+                values.add(token.getTokenValue());
             } else {
                 // check if even indexes refer to comma
                 Assert.equalValue(",", tokens.get(i), Response.NOT_COMMA);
@@ -307,11 +311,15 @@ public class Parser {
 
         Assert.equalValue("FROM", tokens.get(1), Response.NOT_FROM_KEY);
         Assert.equalType(TokenType.IDENTIFIER, tokens.get(2), Response.NOT_IDENTIFIER);
-        Assert.equalValue("WHERE", tokens.get(3), Response.NOT_WHERE_KEY);
-        // conditions
-
-
         deleteCMD.setTableNames(new ArrayList<>(Arrays.asList(tokens.get(2).getTokenValue())));
+        Assert.equalValue("WHERE", tokens.get(3), Response.NOT_WHERE_KEY);
+
+        // conditions
+        List<Token> normalConTokens = normalConTokens(tokens, 4);
+        Condition condition = new Condition();
+        setCondition(condition, normalConTokens);
+        deleteCMD.setCondition(condition);
+
         return deleteCMD;
     }
 
@@ -343,6 +351,231 @@ public class Parser {
 
         return joinCMD;
     }
+
+    /**
+     * @return
+     */
+    private List<Token> normalConTokens(List<Token> tokens, int start) throws DBException {
+        // create a new token list which only contains condition tokens
+        List<Token> subTokens = tokens.subList(start, tokens.size() - 1);
+        List<Token> conTokens = new ArrayList<>(subTokens);
+
+        // check the number of brackets
+        int leftCount = 0, rightCount = 0;
+        for (int i = 0; i < conTokens.size(); i++) {
+            if ("(".equals(conTokens.get(i))) {
+                leftCount++;
+            } else if (")".equals(conTokens.get(i))) {
+                rightCount++;
+            }
+        }
+        Assert.isTrue(leftCount == rightCount, Response.WRONG_FORMAT_CONDITION);
+
+        // check the grammar of the condition tokens
+        for (int i = 0; i < conTokens.size(); i++) {
+
+            // attribute name must be followed by a comparator and a value
+            if (Utils.isAttribute(conTokens.get(i))) {
+                if (i + 2 >= conTokens.size()) {
+                    throw new DBException(Response.WRONG_FORMAT_CONDITION);
+                }
+                Assert.equalType(TokenType.COMPARATOR, conTokens.get(i + 1),
+                        Response.NOT_COMPARATOR);
+                Assert.isValue(conTokens.get(i + 2));
+                // if it's not the first item, a ( or an operator can be before it
+                if (i - 1 >= 0) {
+                    Assert.isTrue("(".equals(conTokens.get(i - 1).getTokenValue()) ||
+                            conTokens.get(i - 1).getTokenType().equals(TokenType.OPERATOR),
+                            Response.WRONG_FORMAT_CONDITION);
+                }
+
+            } else if (conTokens.get(i).getTokenType().equals(TokenType.COMPARATOR)) {
+                // comparator must between a name and a value
+                if (i - 1 < 0 || i + 1 >= conTokens.size()) {
+                    throw new DBException(Response.WRONG_FORMAT_CONDITION);
+                }
+                Assert.isAttribute(conTokens.get(i - 1));
+                Assert.isValue(conTokens.get(i + 1));
+
+            } else if (Utils.isValue(conTokens.get(i))) {
+                // a value must be after a name and a comparator
+                if (i - 2 < 0) {
+                    throw new DBException(Response.WRONG_FORMAT_CONDITION);
+                }
+                Assert.isAttribute(conTokens.get(i - 2));
+                Assert.equalType(TokenType.COMPARATOR, conTokens.get(i - 1),
+                        Response.NOT_COMPARATOR);
+
+                // if it's not the last item, a ) or an operator can be after it
+                if (i + 1 < conTokens.size()) {
+                    Assert.isTrue(")".equals(conTokens.get(i + 1).getTokenValue()) ||
+                                    conTokens.get(i + 1).getTokenType().equals(TokenType.OPERATOR),
+                            Response.WRONG_FORMAT_CONDITION);
+                }
+
+            } else if (tokens.get(i).getTokenType().equals(TokenType.OPERATOR)) {
+                // check the location of bool operators
+                // they must between two valid condition or brackets
+                if (i + 1 >= conTokens.size() || i - 1 < 0) {
+                    throw new DBException(Response.WRONG_FORMAT_CONDITION);
+                }
+                Assert.isTrue(")".equals(conTokens.get(i - 1).getTokenValue()) ||
+                        Utils.isValue(conTokens.get(i - 1)),
+                        Response.WRONG_FORMAT_CONDITION);
+                Assert.isTrue("(".equals(conTokens.get(i + 1).getTokenValue()) ||
+                       Utils.isAttribute(conTokens.get(i + 1)),
+                        Response.WRONG_FORMAT_CONDITION);
+
+            } else if ("(".equals(tokens.get(i).getTokenValue())) {
+                // a ( can only be after a ( or an operator
+                if (i - 1 >= 0) {
+                    Assert.isTrue("(".equals(conTokens.get(i - 1).getTokenValue()) ||
+                            conTokens.get(i - 1).getTokenType().equals(TokenType.OPERATOR),
+                            Response.WRONG_FORMAT_CONDITION);
+                }
+
+                // a ( can only be followed by a ( or an attribute
+                if (i + 1 >= conTokens.size()) {
+                    throw new DBException(Response.WRONG_FORMAT_CONDITION);
+                }
+                Assert.isTrue("(".equals(conTokens.get(i + 1).getTokenValue()) ||
+                        Utils.isAttribute(conTokens.get(i + 1)),
+                        Response.WRONG_FORMAT_CONDITION);
+
+            } else if (")".equals(tokens.get(i).getTokenValue())) {
+                // a ) can only be after a ) or a value
+                if (i - 1 < 0) {
+                    throw new DBException(Response.WRONG_FORMAT_CONDITION);
+                }
+                Assert.isTrue(")".equals(conTokens.get(i - 1).getTokenValue()) ||
+                        Utils.isValue(conTokens.get(i - 1)),
+                        Response.WRONG_FORMAT_CONDITION);
+
+                // a ) can only be followed by a ) or an operator
+                if (i + 1 < conTokens.size()) {
+                    Assert.isTrue(")".equals(conTokens.get(i + 1).getTokenValue()) ||
+                            conTokens.get(i + 1).getTokenType().equals(TokenType.OPERATOR),
+                            Response.WRONG_FORMAT_CONDITION);
+                }
+
+            } else {
+                // other type of tokens found in conditions
+                throw new DBException(Response.WRONG_FORMAT_CONDITION);
+            }
+        }
+
+        // delete extra brackets that only around a pure comparison expression
+        for (int i = 0; i < conTokens.size(); i++) {
+            if ("(".equals(conTokens.get(i).getTokenValue())) {
+                if (i + 4 >= conTokens.size()) {
+                    throw new DBException(Response.WRONG_FORMAT_CONDITION);
+                }
+                // check whether the later three tokens form a comparison
+                if (Utils.isAttribute(conTokens.get(i + 1)) &&
+                        ")".equals(conTokens.get(i + 4).getTokenValue())) {
+                    conTokens.remove(i + 4);
+                    conTokens.remove(i);
+                }
+            }
+        }
+
+        // delete meaningless brackets
+        for (int i = 0; i < conTokens.size(); i++) {
+            int count = 0, index = 0;
+            // delete brackets around brackets
+            if ("(".equals(conTokens.get(i).getTokenValue())) {
+                // find the paired right bracket index
+                for (int j = i; j < conTokens.size(); j++) {
+                    if ("(".equals(conTokens.get(j).getTokenValue())) {
+                        count++;
+                    } else if (")".equals(conTokens.get(j).getTokenValue())) {
+                        count--;
+                    }
+
+                    if (count == 0) {
+                        index = j;
+                        break;
+                    }
+                }
+
+                // delete brackets around the whole comparison expression
+                if (i == 0 && index == conTokens.size() - 1) {
+                    conTokens.remove(index);
+                    conTokens.remove(i);
+                } else {
+                    // check if there are brackets around them
+                    if (i - 1 >= 0 && i + 1 < conTokens.size()) {
+                        if ("(".equals(conTokens.get(i - 1).getTokenValue()) &&
+                        ")".equals(conTokens.get(i + 1).getTokenValue())) {
+                            conTokens.remove(i + 1);
+                            conTokens.remove(i - 1);
+                        }
+                    }
+                }
+            }
+        }
+
+        return conTokens;
+    }
+
+    /**
+     * @return parse normalized condition tokens to get condition recursively
+     */
+    private void setCondition(Condition condition, List<Token> tokens) throws DBException {
+        if (tokens.size() == 3) {
+            condition.setAttributeName(tokens.get(1).getTokenValue());
+            condition.setComparator(tokens.get(1).getTokenValue());
+            condition.setValue(tokens.get(2).getTokenValue());
+            return;
+        }
+
+        // initiate condition instance with normalize tokens
+        int index = 0;
+        for (int i = 0; i < tokens.size(); i++) {
+            // find the right bracket for the given left bracket
+            if ("(".equals(tokens.get(i).getTokenValue())) {
+                int rightIndex = getRightIndex(i, tokens);
+                ArrayList<Token> subTokens = new ArrayList<>(tokens.subList(i, rightIndex));
+                setCondition(subTokens);
+            }
+
+            if (tokens.get(i).getTokenType().equals(TokenType.OPERATOR)) {
+                condition.getOperators().add(tokens.get(i).getTokenValue());
+            }
+
+
+
+            if (Utils.isAttribute(tokens.get(i))) {
+
+            }
+
+
+        }
+
+        return;
+    }
+
+    /**
+     * @return the index of the paired right bracket index for a left bracket
+     */
+    private int getRightIndex(int leftIndex, List<Token> tokens) {
+        int index = 0;
+        int count = 0;
+        for (int i = leftIndex; i < tokens.size(); i++) {
+            if ("(".equals(tokens.get(i).getTokenValue())) {
+                count++;
+            } else if (")".equals(tokens.get(i).getTokenValue())) {
+                count--;
+            }
+
+            if (count == 0) {
+                index = i;
+            }
+        }
+
+        return index;
+    }
+
 
     public void setCommand(String command) {
         this.command = command;

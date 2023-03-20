@@ -12,5 +12,6 @@ public enum TokenType {
         FLOAT,
         NULL,
         OPERATOR,
+        COMPARATOR,
         SPECIAL_CHAR;
 }

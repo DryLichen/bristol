@@ -120,3 +120,14 @@ SELECT * FROM crew;
 
 SELECT * FROM marks pass == TRUE;
 [ERROR]: Invalid query (or similar message !)
+
+
+
+
+
+
+(((pass == FALSE) AND (mark > 35) OR ((email != 12312) AND (fsd == fasf))) OR ((a < 23) AND (name LIKE 'jkjkgj')));
+(pass == FALSE AND mark > 35 OR (email != 12312 AND fsd == fasf)) OR (a < 23 AND name LIKE 'jkjkgj');
+
+(pass == FALSE) AND (name LIKE 'fasdf' OR (number < 324)) OR grade == 3
+pass == FALSE AND (name LIKE 'fasdf' OR number < 324) OR grade == 3
