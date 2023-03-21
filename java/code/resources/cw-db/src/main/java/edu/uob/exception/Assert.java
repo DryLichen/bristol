@@ -5,18 +5,16 @@ import edu.uob.parser.Token;
 import edu.uob.parser.TokenType;
 
 import java.io.File;
-import java.util.Arrays;
-import java.util.HashSet;
 
 public class Assert {
     public static void equalValue(String expect, Token token, Response response) throws DBException {
-        if (!expect.equalsIgnoreCase(token.getTokenValue())) {
+        if (!Utils.equalTokenValue(expect, token)) {
             throw new DBException(response);
         }
     }
 
     public static void equalType(TokenType tokenType, Token token, Response response) throws DBException {
-        if (!tokenType.equals(token.getTokenType())) {
+        if (!Utils.equalTokenType(tokenType, token)) {
             throw new DBException(response);
         }
     }

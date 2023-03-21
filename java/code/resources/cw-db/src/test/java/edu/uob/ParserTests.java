@@ -13,7 +13,7 @@ public class ParserTests {
         Tokenizer tokenizer = new Tokenizer();
         tokenizer.setQuery("  INSERT  INTO  people  VALUES(  'Simon Lock'  ,35, 'simon@bristol.ac.uk' , 1.8  ) ; ");
 
-        tokenizer.setup();
+//        tokenizer.setup();
         ArrayList<Token> tokenList = tokenizer.getTokenList();
         for (Token token : tokenList) {
             System.out.println(token.getTokenType() + " : " + token.getTokenValue());

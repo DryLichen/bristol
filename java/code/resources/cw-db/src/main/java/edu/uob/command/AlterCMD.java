@@ -2,6 +2,7 @@ package edu.uob.command;
 
 import edu.uob.DBServer;
 import edu.uob.IO.FileIO;
+import edu.uob.comman.Utils;
 import edu.uob.exception.Assert;
 import edu.uob.exception.DBException;
 import edu.uob.exception.Response;
@@ -21,13 +22,11 @@ public class AlterCMD extends DBcmd {
 
     @Override
     public String query(DBServer s) throws DBException {
-        String root = s.getStorageFolderPath();
-        String specifiedDb = s.getSpecifiedDb();
-        Assert.notNull(specifiedDb, Response.DB_NOT_SPECIFIED);
+        // get table file
         FileIO fileIO = new FileIO();
-        File tableFile = fileIO.getTable(root, specifiedDb, getTableNames().get(0));
-        Assert.fileExists(tableFile, Response.TABLE_NOT_EXIST);
+        File tableFile = Utils.getTableFile(s, fileIO, getTableNames().get(0));
 
+        // get relation from file
         Relation relation = fileIO.getRelationFromFile(tableFile);
         LinkedList<String> attributes = relation.getAttributes();
         LinkedList<Tuple> tuples = relation.getTuples();
@@ -44,21 +43,16 @@ public class AlterCMD extends DBcmd {
             for (String attribute : attributes) {
                 Assert.isTrue(!attribute.equalsIgnoreCase(alterAttribute), Response.DUPLICATE_ATTR);
             }
-            attributes.add(alterAttribute);
 
-            // modify tuples
-            // fill new column with NULL
-            for (Tuple tuple : tuples) {
-                LinkedList<String> data = tuple.getData();
-                data.add("NULL");
-            }
+            relation.addAttribute(alterAttribute);
+
         } else {
             // drop an attribute
             // can't drop id
             Assert.isTrue(!"id".equalsIgnoreCase(alterAttribute), Response.FORBID_DROP_ID);
             // attributes cannot be empty
             Assert.isTrue(attributes.size() != 0, Response.EMPTY_TABLE);
-            // modify attributes
+            // get the index of the attribute to be deleted
             int index = -1;
             for (int i = 0; i < attributes.size(); i++) {
                 if (alterAttribute.equalsIgnoreCase(attributes.get(i))) {
@@ -69,14 +63,10 @@ public class AlterCMD extends DBcmd {
             Assert.isTrue(index != -1, Response.ATTR_NOT_EXIST);
             attributes.remove(index);
 
-            // modify tuples if there are tuples
-            for (Tuple tuple : tuples) {
-                LinkedList<String> data = tuple.getData();
-                data.remove(index - 1);
-            }
+            relation.deleteAttribute(index);
         }
 
-        fileIO.setRelationToFile(relation, fileIO.getDatabase(root, specifiedDb));
+        fileIO.setRelationToFile(relation, fileIO.getDatabase(s.getStorageFolderPath(), s.getSpecifiedDb()));
         return "[OK]";
     }
 

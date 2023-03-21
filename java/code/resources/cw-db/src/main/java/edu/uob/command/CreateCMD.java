@@ -7,12 +7,8 @@ import edu.uob.exception.DBException;
 import edu.uob.exception.Response;
 import edu.uob.table.Relation;
 
-import java.io.BufferedWriter;
-import java.io.File;
 import java.io.IOException;
-import java.util.HashSet;
 import java.util.LinkedList;
-import java.util.List;
 
 public class CreateCMD extends DBcmd {
 

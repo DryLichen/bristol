@@ -1,6 +1,7 @@
 package edu.uob.table;
 
 import java.util.LinkedList;
+import java.util.StringJoiner;
 
 /**
  * use String to store every datatype
@@ -32,5 +33,18 @@ public class Tuple {
 
     public void setData(LinkedList<String> data) {
         this.data = data;
+    }
+
+    @Override
+    public String toString() {
+        StringJoiner joiner = new StringJoiner("\t", "", "\r\n");
+        if(primaryId != null) {
+            joiner.add(primaryId.toString());
+        }
+        for (String item : data) {
+            joiner.add(item);
+        }
+
+        return joiner.toString();
     }
 }
