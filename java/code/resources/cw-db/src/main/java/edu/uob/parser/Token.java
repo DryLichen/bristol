@@ -24,7 +24,7 @@ public class Token {
                 "SET", "WHERE", "ON", "ADD", "DROP", "="));
 
         comparators = new ArrayList<>();
-        comparators.addAll(Arrays.asList("==", ">", "<", ">=", "<=", "!=", " LIKE "));
+        comparators.addAll(Arrays.asList("==", ">", "<", ">=", "<=", "!=", "LIKE"));
 
         operators = new ArrayList<>(Arrays.asList("AND", "OR"));
 

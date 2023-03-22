@@ -7,8 +7,6 @@ import edu.uob.exception.DBException;
 import edu.uob.exception.Response;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
 
 public class UseCMD extends DBcmd {
 

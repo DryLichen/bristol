@@ -3,7 +3,6 @@ package edu.uob.command;
 import edu.uob.DBServer;
 import edu.uob.IO.FileIO;
 import edu.uob.comman.Utils;
-import edu.uob.exception.Assert;
 import edu.uob.exception.DBException;
 import edu.uob.exception.Response;
 import edu.uob.table.Relation;

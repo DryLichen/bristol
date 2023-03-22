@@ -6,7 +6,7 @@ import java.util.List;
 public class Condition {
     // all the three fields should be null if it's not a pure condition.
     // pure condition means there are only a comparison expression
-    private String attributeName;
+    private String attribute;
     private String comparator;
     private String value;
     // only add items when it's not a pure condition
@@ -17,18 +17,18 @@ public class Condition {
     public Condition() {
     }
 
-    public Condition(String attributeName, String comparator, String value) {
-        this.attributeName = attributeName;
+    public Condition(String attribute, String comparator, String value) {
+        this.attribute = attribute;
         this.comparator = comparator;
         this.value = value;
     }
 
-    public String getAttributeName() {
-        return attributeName;
+    public String getAttribute() {
+        return attribute;
     }
 
-    public void setAttributeName(String attributeName) {
-        this.attributeName = attributeName;
+    public void setAttribute(String attributeName) {
+        this.attribute = attributeName;
     }
 
     public String getComparator() {

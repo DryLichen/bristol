@@ -1,5 +1,10 @@
 package edu.uob.table;
 
+import edu.uob.comman.Utils;
+import edu.uob.exception.DBException;
+
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.StringJoiner;
 
@@ -35,6 +40,35 @@ public class Relation {
         for (Tuple tuple : tuples) {
             tuple.getData().add("NULL");
         }
+    }
+
+    /**
+     * delete tuples having id in idSet
+     */
+    public void deleteTuples(HashSet<Integer> idSet) {
+        Iterator<Tuple> iterator = tuples.iterator();
+        while (iterator.hasNext()) {
+            Tuple tuple = iterator.next();
+            for (Integer id : idSet) {
+                if (tuple.getPrimaryId() == id) {
+                    iterator.remove();
+                }
+            }
+        }
+    }
+
+    /**
+     * keep tuples having id in idSet and delete others
+     */
+    public void keepTuples(HashSet<Integer> idSet) {
+        HashSet<Integer> allIds = new HashSet<>();
+        // get set of all the primary keys
+        for (Tuple tuple : tuples) {
+            allIds.add(tuple.getPrimaryId());
+        }
+
+        allIds.removeAll(idSet);
+        deleteTuples(allIds);
     }
 
     public String getName() {

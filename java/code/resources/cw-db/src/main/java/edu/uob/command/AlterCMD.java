@@ -11,7 +11,6 @@ import edu.uob.table.Tuple;
 
 import java.io.File;
 import java.util.LinkedList;
-import java.util.List;
 
 public class AlterCMD extends DBcmd {
     private String alterationType;
@@ -53,14 +52,7 @@ public class AlterCMD extends DBcmd {
             // attributes cannot be empty
             Assert.isTrue(attributes.size() != 0, Response.EMPTY_TABLE);
             // get the index of the attribute to be deleted
-            int index = -1;
-            for (int i = 0; i < attributes.size(); i++) {
-                if (alterAttribute.equalsIgnoreCase(attributes.get(i))) {
-                    index = i;
-                }
-            }
-            // attribute to be dropped must exist
-            Assert.isTrue(index != -1, Response.ATTR_NOT_EXIST);
+            int index = Utils.getAttributeIndex(attributes, alterAttribute);
             attributes.remove(index);
 
             relation.deleteAttribute(index);

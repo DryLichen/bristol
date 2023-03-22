@@ -16,6 +16,7 @@ public enum Response {
     NOT_WHERE_KEY("[ERROR]: Expect a WHERE key word"),
     NOT_AND_KEY("[ERROR]: Expect a AND key word"),
     NOT_ON_KEY("[ERROR]: Expect a ON key word"),
+    NOT_EQUAL_KEY("[ERROR]: Expect a = key word"),
 
     NOT_COMMAND_TYPE("[ERROR]: Invalid command type: "),
     NOT_IDENTIFIER("[ERROR]: Expect an identifier"),
@@ -49,8 +50,10 @@ public enum Response {
 
     //mainly for condition command
     WRONG_FORMAT_CONDITION("[ERROR]: Format of conditions is incorrect"),
-    NOT_COMPARATOR("[ERROR]: a comparator must follow a name"),
+    NOT_COMPARATOR("[ERROR]: a comparator must follow a attribute"),
 
+    // mainly for update
+    FORBID_MODIFY_ID("[ERROR]: Can't modify ID"),
 
     // error related to IO operations
     CREATE_TABLE_FAIL("[ERROR: Fail to create table file"),

@@ -11,6 +11,7 @@ import edu.uob.parser.TokenType;
 import java.io.File;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.LinkedList;
 
 public class Utils {
 
@@ -149,6 +150,32 @@ public class Utils {
         Assert.fileExists(tableFile, Response.TABLE_NOT_EXIST);
 
         return tableFile;
+    }
+
+    /**
+     * @return index of chosen attribute
+     * @throws DBException if the attribute doesn't exist
+     */
+    public static int getAttributeIndex(LinkedList<String> attributes, String attribute) throws DBException {
+        int index = -1;
+        for (int i = 0; i < attributes.size(); i++) {
+            if (attribute.equalsIgnoreCase(attributes.get(i))) {
+                index = i;
+            }
+        }
+        Assert.isTrue(index != -1, Response.ATTR_NOT_EXIST);
+
+        return index;
+    }
+
+    public static String getTokenValue(Token token) {
+        // delete the single quotes for string value
+        if (token.getTokenType().equals(TokenType.STRING)) {
+            String tokenValue = token.getTokenValue();
+            return tokenValue.substring(1, tokenValue.length() - 1);
+        }
+
+        return token.getTokenValue();
     }
 
 }
