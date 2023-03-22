@@ -15,22 +15,21 @@ public class ConditionUtils {
      * @return a set containing the primary keys of selected tuples
      */
     public HashSet<Integer> getTupleIds(Condition condition, Relation relation) throws DBException {
-        HashSet<Integer> idSet = new HashSet<>();
         List<Condition> conditions = condition.getConditions();
+        // return result set when it's a basic case
         if (conditions.size() == 0) {
             return getIdsByComparator(condition, relation);
         }
 
+        // iterate the condition list in condition
+        HashSet<Integer> idSet = getTupleIds(conditions.get(0), relation);
         for (int i = 0; i < conditions.size() - 1; i++) {
-            HashSet<Integer> idSet1 = getTupleIds(conditions.get(i), relation);
             HashSet<Integer> idSet2 = getTupleIds(conditions.get(i + 1), relation);
-            if ("AND".equals(condition.getOperators().get(i))) {
-                idSet1.addAll(idSet2);
+            if ("AND".equalsIgnoreCase(condition.getOperators().get(i))) {
+                idSet.retainAll(idSet2);
             } else {
-                idSet1.retainAll(idSet2);
+                idSet.addAll(idSet2);
             }
-
-            idSet = idSet1;
         }
 
         return idSet;

@@ -1,6 +1,5 @@
 package edu.uob.parser;
 
-import edu.uob.comman.ConditionUtils;
 import edu.uob.comman.Utils;
 import edu.uob.command.*;
 import edu.uob.exception.Assert;
@@ -12,6 +11,10 @@ import java.util.*;
 public class Parser {
     private String command;
     private Tokenizer tokenizer;
+
+    public void setCommand(String command) {
+        this.command = command;
+    }
 
     /**
      * @return parse tokens and initiate DBcmd instances
@@ -615,6 +618,7 @@ public class Parser {
      * @return parse normalized condition tokens to get condition recursively
      */
     private void getCondition(Condition condition, List<Token> tokens) throws DBException {
+        // basic case, fill and return
         if (tokens.size() == 3) {
             condition.setAttribute(tokens.get(0).getTokenValue());
             condition.setComparator(tokens.get(1).getTokenValue());
@@ -622,38 +626,38 @@ public class Parser {
             return;
         }
 
-        // initiate condition instance
-        int index = 0;
-        for (int i = 0; i < tokens.size(); i++) {
-            // if encounter a left bracket, create new condition list
+        // initiate condition list
+        for (int i = 0; i < tokens.size(); ) {
+            // when detect a left bracket, create new condition list
             // find the right bracket for the given left bracket
-            if ("(".equals(tokens.get(i).getTokenValue())) {
+            if (Utils.equalTokenValue("(", tokens.get(i))) {
                 int rightIndex = getRightIndex(i, tokens);
-                ArrayList<Token> subTokens = new ArrayList<>(tokens.subList(i + 1, rightIndex));
-                getCondition(condition, subTokens);
-            }
-
-            if (tokens.get(i).getTokenType().equals(TokenType.OPERATOR)) {
+                // extract the tokens in brackets
+                ArrayList<Token> newTokens = new ArrayList<>(tokens.subList(i + 1, rightIndex));
+                Condition newCondition = new Condition();
+                getCondition(newCondition, newTokens);
+                condition.getConditions().add(newCondition);
+                i = rightIndex + 1;
+            } else if (tokens.get(i).getTokenType().equals(TokenType.OPERATOR)) {
+                // fill the list for bool operators
                 condition.getOperators().add(tokens.get(i).getTokenValue());
+                i++;
+            } else if (Utils.isAttribute(tokens.get(i)) && !Utils.isValue(tokens.get(i))) {
+                // when detect attribute, fill basic three fields in condition
+                Condition newCondition = new Condition();
+                // extract the tokens in brackets
+                ArrayList<Token> newTokens = new ArrayList<>(tokens.subList(i, i + 3));
+                getCondition(newCondition, newTokens);
+                condition.getConditions().add(newCondition);
+                i += 3;
             }
-
-
-
-            if (Utils.isAttribute(tokens.get(i))) {
-
-            }
-
-
         }
-
-        return;
     }
 
     /**
      * @return the index of the paired right bracket index for a left bracket
      */
-    private int getRightIndex(int leftIndex, List<Token> tokens) {
-        int index = 0;
+    private int getRightIndex(int leftIndex, List<Token> tokens) throws DBException {
         int count = 0;
         for (int i = leftIndex; i < tokens.size(); i++) {
             if (Utils.equalTokenValue("(", tokens.get(i))) {
@@ -663,14 +667,10 @@ public class Parser {
             }
 
             if (count == 0) {
-                index = i;
+                return i;
             }
         }
 
-        return index;
-    }
-
-    public void setCommand(String command) {
-        this.command = command;
+        throw new DBException(Response.NOT_RIGHT_BRACKET);
     }
 }

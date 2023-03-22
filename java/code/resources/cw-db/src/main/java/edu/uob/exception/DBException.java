@@ -3,6 +3,7 @@ package edu.uob.exception;
 import java.io.IOException;
 
 public class DBException extends IOException {
+    private static final long serialVersionUID = 123456789L;
     private String message;
 
     public DBException(String message) {
