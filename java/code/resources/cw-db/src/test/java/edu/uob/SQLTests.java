@@ -223,7 +223,6 @@ public class SQLTests {
         // delete attributes
         sendCommandToServer("delete from marks where pass == true AND (name liKe 'e' oR age == 22) OR name != 'Sarah';");
         response = sendCommandToServer("select * from marks;");
-        System.out.println(response);
         assertFalse(response.contains("Bob"), "Fail to delete expected tuples");
         assertTrue(response.contains("Sarah"), "Fail to delete expected tuples");
         assertFalse(response.contains("Steve"), "Fail to delete expected tuples");
