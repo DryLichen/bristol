@@ -12,7 +12,7 @@ public class Parser {
     private String command;
     private Tokenizer tokenizer;
 
-    public void setCommand(String command) {
+    public Parser(String command) {
         this.command = command;
     }
 
@@ -371,7 +371,7 @@ public class Parser {
             columnNames.add(tokens.get(index++).getTokenValue());
             Assert.equalValue("=", tokens.get(index++), Response.NOT_EQUAL_KEY);
             Assert.isValue(tokens.get(index));
-            valueList.add(tokens.get(index++).getTokenValue());
+            valueList.add(Utils.getTokenValue(tokens.get(index++)));
             if (index != whereIndex) {
                 Assert.equalValue(",", tokens.get(index++), Response.NOT_COMMA);
             }

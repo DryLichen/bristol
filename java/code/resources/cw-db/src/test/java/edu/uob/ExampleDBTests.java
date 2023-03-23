@@ -19,8 +19,7 @@ public class ExampleDBTests {
     }
 
     // Random name generator - useful for testing "bare earth" queries (i.e. where tables don't previously exist)
-    private String generateRandomName()
-    {
+    private String generateRandomName() {
         String randomName = "";
         for(int i=0; i<10 ;i++) randomName += (char)( 97 + (Math.random() * 25.0));
         return randomName;

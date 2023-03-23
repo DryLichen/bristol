@@ -133,13 +133,21 @@ public class Utils {
      */
     public static boolean isLike(String expect, String value) {
         // null, boolean, float, integer
-        if ("NULL".equalsIgnoreCase(expect) ||
-                Token.booleans.stream().anyMatch(i -> i.equalsIgnoreCase(expect)) ||
-                checkFloat(expect)) {
+        if (!isLikeHelper(expect) || !isLikeHelper(value)) {
             return false;
         }
 
         return value.contains(expect);
+    }
+
+    private static boolean isLikeHelper(String value) {
+        if ("NULL".equalsIgnoreCase(value) ||
+                Token.booleans.stream().anyMatch(i -> i.equalsIgnoreCase(value)) ||
+                checkFloat(value)) {
+            return false;
+        }
+
+        return true;
     }
 
     public static File getTableFile(DBServer s, FileIO fileIO, String tableName) throws DBException {

@@ -32,8 +32,8 @@ public class JoinCMD extends DBcmd {
         LinkedList<Tuple> tuples2 = relation2.getTuples();
 
         // find the indexes of joined attributes in original relations
-        int joinIndex1 = getJoinIndex(getColumnNames().get(0), attributes1);
-        int joinIndex2 = getJoinIndex(getColumnNames().get(1), attributes2);
+        int joinIndex1 = Utils.getAttributeIndex(attributes1, getColumnNames().get(0));
+        int joinIndex2 = Utils.getAttributeIndex(attributes2, getColumnNames().get(1));
 
         // set attributes for joined relation
         Relation joinRelation = new Relation();
@@ -63,56 +63,27 @@ public class JoinCMD extends DBcmd {
                         // 1.1. join attribute of the second relation is id
                         if (Utils.isEqual(t1.getPrimaryId().toString(),
                                 t2.getPrimaryId().toString())) {
-                            Tuple tuple = new Tuple();
-                            LinkedList<String> data = new LinkedList<>();
-                            data.addAll(t1.getData());
-                            data.addAll(t2.getData());
-                            tuple.setData(data);
-                            joinTuples.add(tuple);
+                            joinTuples.add(setTupleFromOrigin(t1, t2, joinIndex1, joinIndex2));
                         }
                     } else {
                         // 1.2. join attribute of the second relation isn't id
                         if (Utils.isEqual(t1.getPrimaryId().toString(),
                                 t2.getData().get(joinIndex2 - 1))) {
-                            Tuple tuple = new Tuple();
-                            LinkedList<String> data = new LinkedList<>();
-                            data.addAll(t1.getData());
-                            LinkedList<String> copyData2 = new LinkedList<>(t2.getData());
-                            copyData2.remove(joinIndex2 - 1);
-                            data.addAll(copyData2);
-                            tuple.setData(data);
-                            joinTuples.add(tuple);
+                            joinTuples.add(setTupleFromOrigin(t1, t2, joinIndex1, joinIndex2));
                         }
                     }
                 } else {
                     // 2. when join attribute of the first relation isn't id
+                    // 2.1. join attribute of the second relation is id
                     if (joinIndex2 == 0) {
-                        // 2.1. join attribute of the second relation is id
-                        if (Utils.isEqual(t1.getData().get(joinIndex1 - 1),
-                                t2.getPrimaryId().toString())) {
-                            Tuple tuple = new Tuple();
-                            LinkedList<String> data = new LinkedList<>();
-                            LinkedList<String> copyData1 = new LinkedList<>(t1.getData());
-                            copyData1.remove(joinIndex1 - 1);
-                            data.addAll(copyData1);
-                            data.addAll(t2.getData());
-                            tuple.setData(data);
-                            joinTuples.add(tuple);
+                        if (Utils.isEqual(t1.getData().get(joinIndex1 - 1), t2.getPrimaryId().toString())) {
+                            joinTuples.add(setTupleFromOrigin(t1, t2, joinIndex1, joinIndex2));
                         }
                     } else {
                         // 2.2. join attribute of the second relation isn't id
                         if (Utils.isEqual(t1.getData().get(joinIndex1 - 1),
                                 t2.getData().get(joinIndex2 - 1))) {
-                            Tuple tuple = new Tuple();
-                            LinkedList<String> data = new LinkedList<>();
-                            LinkedList<String> copyData1 = new LinkedList<>(t1.getData());
-                            copyData1.remove(joinIndex1 - 1);
-                            data.addAll(copyData1);
-                            LinkedList<String> copyData2 = new LinkedList<>(t1.getData());
-                            copyData2.remove(joinIndex2 - 1);
-                            data.addAll(copyData2);
-                            tuple.setData(data);
-                            joinTuples.add(tuple);
+                            joinTuples.add(setTupleFromOrigin(t1, t2, joinIndex1, joinIndex2));
                         }
                     }
                 }
@@ -129,15 +100,27 @@ public class JoinCMD extends DBcmd {
         return joiner.toString();
     }
 
-    /**
-     * @return the attribute index to be joined, including ID
-     */
-    private int getJoinIndex(String joinColumn, LinkedList<String> attributes) throws DBException {
-        for (int i = 0; i < attributes.size(); i++) {
-            if (attributes.get(i).equalsIgnoreCase(joinColumn)) {
-                return i;
-            }
+    private Tuple setTupleFromOrigin(Tuple t1, Tuple t2, int joinIndex1, int joinIndex2) {
+        Tuple tuple = new Tuple();
+
+        LinkedList<String> data = new LinkedList<>();
+        if (joinIndex1 == 0) {
+            data.addAll(t1.getData());
+        } else {
+            LinkedList<String> copyData1 = new LinkedList<>(t1.getData());
+            copyData1.remove(joinIndex1 - 1);
+            data.addAll(copyData1);
         }
-        throw new DBException(Response.ATTR_NOT_EXIST);
+
+        if (joinIndex2 == 0) {
+            data.addAll(t2.getData());
+        } else {
+            LinkedList<String> copyData2 = new LinkedList<>(t2.getData());
+            copyData2.remove(joinIndex2 - 1);
+            data.addAll(copyData2);
+        }
+
+        tuple.setData(data);
+        return tuple;
     }
 }

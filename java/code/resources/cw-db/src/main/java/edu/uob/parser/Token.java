@@ -34,9 +34,6 @@ public class Token {
         specialChars.addAll(Arrays.asList("(", ")", ",", ";"));
     }
 
-    public Token() {
-    }
-
     public Token(TokenType tokenType, String tokenValue) {
         this.tokenType = tokenType;
         this.tokenValue = tokenValue;
@@ -46,15 +43,8 @@ public class Token {
         return tokenType;
     }
 
-    public void setTokenType(TokenType tokenType) {
-        this.tokenType = tokenType;
-    }
-
     public String getTokenValue() {
         return tokenValue;
     }
 
-    public void setTokenValue(String tokenValue) {
-        this.tokenValue = tokenValue;
-    }
 }

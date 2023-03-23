@@ -21,10 +21,8 @@ public class AlterCMD extends DBcmd {
 
     @Override
     public String query(DBServer s) throws DBException {
-        // get table file
         FileIO fileIO = new FileIO();
         File tableFile = Utils.getTableFile(s, fileIO, getTableNames().get(0));
-
         // get relation from file
         Relation relation = fileIO.getRelationFromFile(tableFile);
         LinkedList<String> attributes = relation.getAttributes();
@@ -53,8 +51,6 @@ public class AlterCMD extends DBcmd {
             Assert.isTrue(attributes.size() != 0, Response.EMPTY_TABLE);
             // get the index of the attribute to be deleted
             int index = Utils.getAttributeIndex(attributes, alterAttribute);
-            attributes.remove(index);
-
             relation.deleteAttribute(index);
         }
 

@@ -17,12 +17,6 @@ public class Condition {
     public Condition() {
     }
 
-    public Condition(String attribute, String comparator, String value) {
-        this.attribute = attribute;
-        this.comparator = comparator;
-        this.value = value;
-    }
-
     public String getAttribute() {
         return attribute;
     }
@@ -51,15 +45,8 @@ public class Condition {
         return conditions;
     }
 
-    public void setConditions(List<Condition> conditions) {
-        this.conditions = conditions;
-    }
-
     public List<String> getOperators() {
         return operators;
     }
 
-    public void setOperators(List<String> operators) {
-        this.operators = operators;
-    }
 }

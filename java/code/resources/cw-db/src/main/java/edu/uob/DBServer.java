@@ -53,8 +53,7 @@ public class DBServer {
     * <p>This method handles all incoming DB commands and carries out the required actions.
     */
     public String handleCommand(String command) {
-        Parser parser = new Parser();
-        parser.setCommand(command);
+        Parser parser = new Parser(command);
 
         try {
             DBcmd dBcmd = parser.parse();

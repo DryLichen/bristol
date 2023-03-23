@@ -8,16 +8,9 @@ import java.util.StringJoiner;
  * when it comes to analyze, convert datatype manually
  */
 public class Tuple {
+
     private Integer primaryId;
     private LinkedList<String> data = new LinkedList<>();
-
-    public Tuple() {
-    }
-
-    public Tuple(Integer primaryId, LinkedList<String> data) {
-        this.primaryId = primaryId;
-        this.data = data;
-    }
 
     public Integer getPrimaryId() {
         return primaryId;

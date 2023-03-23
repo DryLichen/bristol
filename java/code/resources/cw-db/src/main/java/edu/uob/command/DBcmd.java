@@ -53,10 +53,6 @@ public abstract class DBcmd {
         this.DBname = DBname;
     }
 
-    public String getCommandType() {
-        return commandType;
-    }
-
     public void setCommandType(String commandType) {
         this.commandType = commandType;
     }

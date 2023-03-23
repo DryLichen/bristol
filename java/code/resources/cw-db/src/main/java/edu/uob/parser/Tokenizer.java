@@ -15,8 +15,6 @@ public class Tokenizer {
     private ArrayList<String> specialCharacters = new ArrayList<>();
     private ArrayList<Token> tokenList = new ArrayList<>();
 
-    public Tokenizer() {}
-
     public Tokenizer(String query) {
         this.query = query;
     }
@@ -152,10 +150,6 @@ public class Tokenizer {
             return true;
         }
         return false;
-    }
-
-    public void setQuery(String query) {
-        this.query = query;
     }
 
     public ArrayList<Token> getTokenList() {

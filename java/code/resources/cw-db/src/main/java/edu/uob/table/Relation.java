@@ -1,8 +1,5 @@
 package edu.uob.table;
 
-import edu.uob.comman.Utils;
-import edu.uob.exception.DBException;
-
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -13,15 +10,6 @@ public class Relation {
     // attributes include id
     private LinkedList<String> attributes = new LinkedList<>();
     private LinkedList<Tuple> tuples = new LinkedList<>();
-
-    public Relation() {
-    }
-
-    public Relation(String name, LinkedList<String> attributes, LinkedList<Tuple> tuples) {
-        this.name = name;
-        this.attributes = attributes;
-        this.tuples = tuples;
-    }
 
     public void deleteAttribute(int index) {
         attributes.remove(index);
@@ -89,10 +77,6 @@ public class Relation {
 
     public LinkedList<Tuple> getTuples() {
         return tuples;
-    }
-
-    public void setTuples(LinkedList<Tuple> tuples) {
-        this.tuples = tuples;
     }
 
     @Override
