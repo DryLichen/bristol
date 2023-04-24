@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <title>List of Units</title>
+    </head>
+    <body>
+        <h1>List of units</h1>
+        <table>
+            <tr>
+                <th>code</th>
+                <th>title</th>
+                <th>link</th>
+            </tr>
+            <div th:each="unit : ${units}">
+                <tr>
+                    <td th:text="${unit.code}"></td>
+                    <td th:text="${unit.title}"></td>
+                    <td>
+                        <a th:href="'/unit/' + ${unit.code}" th:text="details"></a>
+                    </td>
+                </tr>
+            </div>
+        </table>
+        <!-- <ul th:each="unit : ${units}">
+            <li>
+                <a th:href="'/unit/' + ${unit.code}" th:text="${unit.code}"></a>
+                <span th:text="${unit.title}"></span>
+            </li>
+        </ul> -->
+    </body>
+</html>

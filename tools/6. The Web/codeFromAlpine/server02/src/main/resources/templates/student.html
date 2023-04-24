@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <title>Student Details</title>
+    </head>
+    <body>
+        <h1>Student Details</h1>
+        <table>
+            <tr>
+                <th>Unit Name</th>
+                <th>Unit code</th>
+                <th>grade</th>
+            </tr>
+            <div th:each="grade : ${grades}">
+                <tr>
+                    <td th:text="${grade.first.title}"></td>
+                    <td th:text="${grade.first.code}"></td>
+                    <td th:text="${grade.second}"></td>
+                </tr>
+            </div>
+        </table>
+    </body>
+</html>
