@@ -42,8 +42,7 @@ class ExampleSTAGTests {
 
   // Test that we can pick something up and that it appears in our inventory
   @Test
-  void testGet()
-  {
+  void testGet() {
       String response;
       sendCommandToServer("simon: get potion");
       response = sendCommandToServer("simon: inv");
@@ -56,8 +55,7 @@ class ExampleSTAGTests {
 
   // Test that we can goto a different location (we won't get very far if we can't move around the game !)
   @Test
-  void testGoto()
-  {
+  void testGoto() {
       sendCommandToServer("simon: goto forest");
       String response = sendCommandToServer("simon: look");
       response = response.toLowerCase();

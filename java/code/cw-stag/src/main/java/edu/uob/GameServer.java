@@ -1,5 +1,11 @@
 package edu.uob;
 
+import edu.uob.database.ActionData;
+import edu.uob.database.EntityData;
+import edu.uob.exception.STAGException;
+import edu.uob.parser.ActionFileParser;
+import edu.uob.parser.EntityFileParser;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -14,6 +20,9 @@ import java.nio.file.Paths;
 public final class GameServer {
 
     private static final char END_OF_TRANSMISSION = 4;
+    // store data parsed from entity and action files
+    private EntityData entityData = new EntityData();
+    private ActionData actionData = new ActionData();
 
     public static void main(String[] args) throws IOException {
         File entitiesFile = Paths.get("config" + File.separator + "basic-entities.dot").toAbsolutePath().toFile();
@@ -33,8 +42,15 @@ public final class GameServer {
     *
     */
     public GameServer(File entitiesFile, File actionsFile) {
-        // TODO implement your server logic here
-
+        // parse two files to get entity and action data
+        EntityFileParser entityParser = new EntityFileParser(entitiesFile, entityData);
+        ActionFileParser actionParser = new ActionFileParser(actionsFile, actionData);
+        try {
+            entityParser.parseEntities();
+            actionParser.parseActions();
+        } catch (STAGException e) {
+            System.out.println(e.getMessage());
+        }
     }
 
     /**
@@ -44,10 +60,21 @@ public final class GameServer {
     * <p>This method handles all incoming game commands and carries out the corresponding actions.
     */
     public String handleCommand(String command) {
-        // TODO implement your server logic here
+        // TODO
+
 
         return "";
     }
+
+
+
+
+
+
+
+
+
+
 
     //  === Methods below are there to facilitate server related operations. ===
 

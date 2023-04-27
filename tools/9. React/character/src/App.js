@@ -25,22 +25,22 @@ class App extends React.Component {
       if (this.state.charisma_points === 2) {
         return;
       }
-      this.setState({charisma_points: this.state.charisma_points + 1});
+      this.setState({charisma_points: this.state.charisma_points + 1})
     } else if (stat === "Prowess") {
       if (this.state.prowess_points === 2) {
           return;
       }
-      this.setState({prowess_points: this.state.prowess_points + 1});
+      this.setState({prowess_points: this.state.prowess_points + 1})
     } else if (stat === "Agility") {
       if (this.state.agility_points === 2) {
         return;
       }
-      this.setState({agility_points: this.state.agility_points + 1});
+      this.setState({agility_points: this.state.agility_points + 1})
     } else if (stat === "Strength") {
       if (this.state.strength_points === 2) {
         return;
       }
-      this.setState({strength_points: this.state.strength_points + 1});
+      this.setState({strength_points: this.state.strength_points + 1})
     }
 
     this.setState({stats_points: this.state.stats_points - 1});

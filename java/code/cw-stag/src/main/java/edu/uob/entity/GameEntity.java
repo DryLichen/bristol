@@ -1,4 +1,4 @@
-package edu.uob;
+package edu.uob.entity;
 
 /**
  * Store data of entities
@@ -7,19 +7,16 @@ public abstract class GameEntity {
     private String name;
     private String description;
 
-    public GameEntity(String name, String description)
-    {
+    public GameEntity(String name, String description) {
         this.name = name;
         this.description = description;
     }
 
-    public String getName()
-    {
+    public String getName() {
         return name;
     }
 
-    public String getDescription()
-    {
+    public String getDescription() {
         return description;
     }
 }
