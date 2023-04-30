@@ -3,8 +3,8 @@ package edu.uob;
 import edu.uob.database.ActionData;
 import edu.uob.database.EntityData;
 import edu.uob.exception.STAGException;
-import edu.uob.parser.ActionFileParser;
-import edu.uob.parser.EntityFileParser;
+import edu.uob.file.ActionFileParser;
+import edu.uob.file.EntityFileParser;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -42,7 +42,7 @@ public final class GameServer {
     *
     */
     public GameServer(File entitiesFile, File actionsFile) {
-        // parse two files to get entity and action data
+        // parse two files to store entity and action data
         EntityFileParser entityParser = new EntityFileParser(entitiesFile, entityData);
         ActionFileParser actionParser = new ActionFileParser(actionsFile, actionData);
         try {
@@ -60,7 +60,6 @@ public final class GameServer {
     * <p>This method handles all incoming game commands and carries out the corresponding actions.
     */
     public String handleCommand(String command) {
-        // TODO
 
 
         return "";

@@ -13,26 +13,6 @@ public class Location extends GameEntity {
         super(name, description);
     }
 
-    public void setArtefactSet(HashSet<Artefact> artefactSet) {
-        this.artefactSet = artefactSet;
-    }
-
-    public void setFurnitureSet(HashSet<Furniture> furnitureSet) {
-        this.furnitureSet = furnitureSet;
-    }
-
-    public void setPathSet(HashSet<Path> pathSet) {
-        this.pathSet = pathSet;
-    }
-
-    public void setCharacterSet(HashSet<Character> characterSet) {
-        this.characterSet = characterSet;
-    }
-
-    public void setPlayerSet(HashSet<Player> playerSet) {
-        this.playerSet = playerSet;
-    }
-
     public HashSet<Artefact> getArtefactSet() {
         return artefactSet;
     }

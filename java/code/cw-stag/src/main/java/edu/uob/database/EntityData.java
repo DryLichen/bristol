@@ -1,54 +1,60 @@
 package edu.uob.database;
 
 import edu.uob.entity.*;
-import edu.uob.entity.Character;
 
 import java.util.HashSet;
+import java.util.Set;
 
+/**
+ * store all the entities data
+ */
 public class EntityData {
-    private HashSet<Location> locationSet = new HashSet<>();
-    private HashSet<Artefact> artefactSet = new HashSet<>();
-    private HashSet<Furniture> furnitureSet = new HashSet<>();
-    private HashSet<Character> characterSet = new HashSet<>();
-    private HashSet<Player> playerSet = new HashSet<>();
+    private HashSet<GameEntity> locationSet = new HashSet<>();
+    private Location spawnPoint;
+    private Location storeroom;
+    private HashSet<GameEntity> artefactSet = new HashSet<>();
+    private HashSet<GameEntity> furnitureSet = new HashSet<>();
+    private HashSet<GameEntity> characterSet = new HashSet<>();
+    private HashSet<GameEntity> playerSet = new HashSet<>();
 
-    public void setLocationSet(HashSet<Location> locationSet) {
-        this.locationSet = locationSet;
-    }
-
-    public void setArtefactSet(HashSet<Artefact> artefactSet) {
-        this.artefactSet = artefactSet;
-    }
-
-    public void setFurnitureSet(HashSet<Furniture> furnitureSet) {
-        this.furnitureSet = furnitureSet;
-    }
-
-    public void setCharacterSet(HashSet<Character> characterSet) {
-        this.characterSet = characterSet;
-    }
-
-    public void setPlayerSet(HashSet<Player> playerSet) {
-        this.playerSet = playerSet;
-    }
-
-    public HashSet<Location> getLocationSet() {
+    public HashSet<GameEntity> getLocationSet() {
         return locationSet;
     }
 
-    public HashSet<Artefact> getArtefactSet() {
+    public HashSet<GameEntity> getArtefactSet() {
         return artefactSet;
     }
 
-    public HashSet<Furniture> getFurnitureSet() {
+    public HashSet<GameEntity> getFurnitureSet() {
         return furnitureSet;
     }
 
-    public HashSet<Character> getCharacterSet() {
+    public HashSet<GameEntity> getCharacterSet() {
         return characterSet;
     }
 
-    public HashSet<Player> getPlayerSet() {
+    public HashSet<GameEntity> getPlayerSet() {
         return playerSet;
+    }
+
+    public void setSpawnPoint(Location spawnPoint) {
+        this.spawnPoint = spawnPoint;
+    }
+
+    public void setStoreroom(Location storeroom) {
+        this.storeroom = storeroom;
+    }
+
+    /**
+     * @return all the game entities except player
+     */
+    public Set<GameEntity> getAllEntities() {
+        HashSet<GameEntity> gameEntities = new HashSet<>();
+        gameEntities.addAll(artefactSet);
+        gameEntities.addAll(furnitureSet);
+        gameEntities.addAll(characterSet);
+        gameEntities.addAll(locationSet);
+
+        return gameEntities;
     }
 }

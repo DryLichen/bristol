@@ -4,10 +4,10 @@ package edu.uob.entity;
  * store the path from on location to another location
  */
 public class Path {
-    private Location fromLocation;
-    private Location toLocation;
+    private String fromLocation;
+    private String toLocation;
 
-    public Path(Location fromLocation, Location toLocation) {
+    public Path(String fromLocation, String toLocation) {
         this.fromLocation = fromLocation;
         this.toLocation = toLocation;
     }
