@@ -17,8 +17,70 @@ public class EntityData {
     private HashSet<GameEntity> characterSet = new HashSet<>();
     private HashSet<GameEntity> playerSet = new HashSet<>();
 
+    /**
+     * @return all the game entities except players
+     */
+    public Set<GameEntity> getAllEntities() {
+        HashSet<GameEntity> gameEntities = new HashSet<>();
+        gameEntities.addAll(artefactSet);
+        gameEntities.addAll(furnitureSet);
+        gameEntities.addAll(characterSet);
+        gameEntities.addAll(locationSet);
+
+        return gameEntities;
+    }
+
+    /**
+     * @return gameEntity with the given name
+     */
+    public GameEntity getEntityByName(String name) {
+        for (GameEntity entity : getAllEntities()) {
+            if (entity.getName().equalsIgnoreCase(name)) {
+                return entity;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * @return player with given name
+     * if it doesn't exist, create a new player and return it
+     */
+    public GameEntity getPlayerByName(String playName) {
+        for (GameEntity player : playerSet) {
+            if (player.getName().equalsIgnoreCase(playName)) {
+                return player;
+            }
+        }
+
+        // create a new player
+        Player player = new Player(playName, null);
+        playerSet.add(player);
+        // add player to spawn point
+        spawnPoint.getPlayerSet().add(player);
+        return player;
+    }
+
+    /**
+     * @return location of the given player
+     */
+    public Location getPlayerLocation(Player player) {
+        for (GameEntity entity : locationSet) {
+            Location location = (Location) entity;
+            if (location.getPlayerSet().contains(player)) {
+                return location;
+            }
+        }
+
+        return null;
+    }
+
     public HashSet<GameEntity> getLocationSet() {
         return locationSet;
+    }
+
+    public Location getStoreroom() {
+        return storeroom;
     }
 
     public HashSet<GameEntity> getArtefactSet() {
@@ -45,16 +107,4 @@ public class EntityData {
         this.storeroom = storeroom;
     }
 
-    /**
-     * @return all the game entities except player
-     */
-    public Set<GameEntity> getAllEntities() {
-        HashSet<GameEntity> gameEntities = new HashSet<>();
-        gameEntities.addAll(artefactSet);
-        gameEntities.addAll(furnitureSet);
-        gameEntities.addAll(characterSet);
-        gameEntities.addAll(locationSet);
-
-        return gameEntities;
-    }
 }

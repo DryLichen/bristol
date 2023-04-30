@@ -155,7 +155,7 @@ public class EntityFileParser {
     }
 
     /**
-     * parses path edges and store in location database
+     * parses path edges and store path data in location database
      */
     private void storePaths(ArrayList<Edge> pathEdges) {
         for (Edge pathEdge : pathEdges) {
@@ -164,17 +164,11 @@ public class EntityFileParser {
             String fromLocationName = fromLocationNode.getId().getId();
             Node toLocationNode = pathEdge.getTarget().getNode();
             String toLocationName = toLocationNode.getId().getId();
-            Path path = new Path(fromLocationName, toLocationName);
 
-            // check if a location is at either end of the path
-            Location fromLocation = null, toLocation = null;
+            // check if a location is at the beginning of the path
             for (GameEntity location : entityData.getLocationSet()) {
-                String locationName = location.getName();
-                if (fromLocationName.equalsIgnoreCase(locationName)) {
-                    ((Location) location).getPathSet().add(path);
-                }
-                if (toLocationName.equalsIgnoreCase(locationName)) {
-                    ((Location) location).getPathSet().add(path);
+                if (fromLocationName.equalsIgnoreCase(location.getName())) {
+                    ((Location) location).getToLocationSet().add(toLocationName);
                 }
             }
         }

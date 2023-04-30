@@ -12,18 +12,18 @@ import java.util.HashSet;
 public class ActionData {
     // every trigger is mapped to an action
     private HashMap<String, HashSet<GameAction>> actionMap = new HashMap<>();
-    private HashSet<String> builtIn = new HashSet<>();
+    private HashSet<String> builtInAction = new HashSet<>();
 
     public ActionData() {
-        builtIn.addAll(Arrays.asList("health", "goto", "look", "drop",
-                "inv", "inventory", "get"));
+        builtInAction.addAll(Arrays.asList("goto", "look", "drop",
+                "inv", "inventory", "get", "health"));
     }
 
     public HashMap<String, HashSet<GameAction>> getActionMap() {
         return actionMap;
     }
 
-    public HashSet<String> getBuiltIn() {
-        return builtIn;
+    public HashSet<String> getBuiltInAction() {
+        return builtInAction;
     }
 }

@@ -2,6 +2,8 @@ package edu.uob.file;
 
 import edu.uob.action.GameAction;
 import edu.uob.database.ActionData;
+import edu.uob.database.EntityData;
+import edu.uob.entity.GameEntity;
 import edu.uob.exception.Response;
 import edu.uob.exception.STAGException;
 import org.w3c.dom.Document;
@@ -16,6 +18,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Set;
 
 /**
  * parse actions file and store data into database
@@ -23,10 +26,12 @@ import java.util.HashSet;
 public class ActionFileParser {
     private File actionsFile;
     private ActionData actionData;
+    private EntityData entityData;
 
-    public ActionFileParser(File actionsFile, ActionData actionData) {
+    public ActionFileParser(File actionsFile, ActionData actionData, EntityData entityData) {
         this.actionsFile = actionsFile;
         this.actionData = actionData;
+        this.entityData = entityData;
     }
 
     /**
@@ -42,15 +47,24 @@ public class ActionFileParser {
             GameAction gameAction = new GameAction();
             Element action = (Element) actionNodes.item(i);
 
-            // add elements into gameAction instance
+            // add triggers into gameAction instance
             HashSet<String> triggers = getActionElements(action, "triggers", "keyphrase");
             gameAction.getTriggerSet().addAll(triggers);
+            // add subjects into gameAction instance
             HashSet<String> subjects = getActionElements(action, "subjects", "entity");
-            gameAction.getSubjectSet().addAll(subjects);
+            for (String subject : subjects) {
+                gameAction.getSubjectSet().add(entityData.getEntityByName(subject));
+            }
+            // add consumed entities into gameAction instance
             HashSet<String> consumed = getActionElements(action, "consumed", "entity");
-            gameAction.getConsumeSet().addAll(consumed);
+            for (String consume : consumed) {
+                gameAction.getConsumeSet().add(entityData.getEntityByName(consume));
+            }
+            // add produced entities into gameAction instance
             HashSet<String> produced = getActionElements(action, "produced", "entity");
-            gameAction.getProduceSet().addAll(produced);
+            for (String produce : produced) {
+                gameAction.getProduceSet().add(entityData.getEntityByName(produce));
+            }
 
             // map triggers to gameAction set
             mapTriggerAction(triggers, gameAction);

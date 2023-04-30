@@ -8,7 +8,10 @@ import edu.uob.exception.Response;
 import edu.uob.exception.STAGException;
 import edu.uob.util.Assert;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.stream.Collectors;
 
 public class CmdTokenizer {
@@ -26,24 +29,22 @@ public class CmdTokenizer {
     public Cmd tokenizeCommand(String command) throws STAGException {
         Cmd cmd = new Cmd();
         // process command to convert letters to lowercase
-        command = command.trim();
-        command = command.toLowerCase();
+        command = command.trim().toLowerCase();
 
-        // get player
-        String player = getPlayer(command);
-        cmd.setPlayer(new Player(player, null));
+        // get command player
+        String playerName = getPlayer(command);
+        cmd.setPlayer((Player) entityData.getPlayerByName(playerName));
 
-        // get tokens
-        String[] tokens = getTokens(command.substring(command.indexOf(":") + 1));
+        // get command tokens
+        ArrayList<String> tokens = getTokens(command.substring(command.indexOf(":") + 1));
 
         // classify tokens and store tokens into Cmd instance
         outer:
         for (String token : tokens) {
-            // check if the token is action trigger
-            // built-in action
-            for (String builtIn : actionData.getBuiltIn()) {
+            // check if the token is built-in action
+            for (String builtIn : actionData.getBuiltInAction()) {
                 if (token.equalsIgnoreCase(builtIn)) {
-                    cmd.getActionList().add(token);
+                    cmd.getBuiltInAction().add(token);
                     continue outer;
                 }
             }
@@ -59,7 +60,7 @@ public class CmdTokenizer {
             // check if the token is artefact
             for (GameEntity gameEntity : entityData.getArtefactSet()) {
                 if (token.equalsIgnoreCase(gameEntity.getName())) {
-                    cmd.getArtefactList().add((Artefact) gameEntity);
+                    cmd.getArtefactList().add(gameEntity);
                     continue outer;
                 }
             }
@@ -67,7 +68,7 @@ public class CmdTokenizer {
             // check if the token is furniture
             for (GameEntity gameEntity : entityData.getFurnitureSet()) {
                 if (token.equalsIgnoreCase(gameEntity.getName())) {
-                    cmd.getFurnitureList().add((Furniture) gameEntity);
+                    cmd.getFurnitureList().add(gameEntity);
                     continue outer;
                 }
             }
@@ -75,7 +76,7 @@ public class CmdTokenizer {
             // check if the token is character
             for (GameEntity gameEntity : entityData.getCharacterSet()) {
                 if (token.equalsIgnoreCase(gameEntity.getName())) {
-                    cmd.getCharacterList().add((Character) gameEntity);
+                    cmd.getCharacterList().add(gameEntity);
                     continue outer;
                 }
             }
@@ -83,7 +84,7 @@ public class CmdTokenizer {
             // check if the token is location
             for (GameEntity gameEntity : entityData.getLocationSet()) {
                 if (token.equalsIgnoreCase(gameEntity.getName())) {
-                    cmd.getLocationList().add((Location) gameEntity);
+                    cmd.getLocationList().add(gameEntity);
                     continue outer;
                 }
             }
@@ -131,26 +132,42 @@ public class CmdTokenizer {
         return true;
     }
 
+    private void setCmdPlayer() {
+
+    }
+
     /**
      * @return literal tokens by splitting the command
      */
-    private String[] getTokens(String command) {
+    private ArrayList<String> getTokens(String command) {
+        // make sure there is only one space at the beginning and end of the command
+        command = " " + command.trim() + " ";
+
         // get all the keywords to be identified in commands
         HashSet<String> keywords = new HashSet<>();
         keywords.addAll(actionData.getActionMap().keySet());
+        keywords.addAll(actionData.getBuiltInAction());
         keywords.addAll(entityData.getAllEntities().
                 stream().map(e -> e.getName()).collect(Collectors.toSet()));
 
         // add @ around keywords to separate them with decorative words
         for (String keyword : keywords) {
-            command.replace(keyword.toLowerCase(), "@" + keyword + "@");
+            command.replace(" " + keyword.toLowerCase() + " ", " @" + keyword + "@ ");
         }
-        // remove all double @
         while (command.contains("@@")) {
             command.replace("@@", "@");
         }
         // split command in terms of @
-        String[] tokens = command.split("@");
+        ArrayList<String> tokens = new ArrayList<>(Arrays.asList(command.split("@")));
+
+        // delete all meaningless space items in token list
+        Iterator<String> iterator = tokens.iterator();
+        while (iterator.hasNext()) {
+            String next = iterator.next();
+            if (next.trim().isEmpty()) {
+                iterator.remove();
+            }
+        }
 
         return tokens;
     }

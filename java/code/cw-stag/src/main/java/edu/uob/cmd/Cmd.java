@@ -1,41 +1,57 @@
 package edu.uob.cmd;
 
+import edu.uob.action.GameAction;
 import edu.uob.entity.*;
-import edu.uob.entity.Character;
 
 import java.util.ArrayList;
 
 public class Cmd {
-    // there could be duplicated actions or entities in a command
+
+    private ArrayList<String> builtInAction = new ArrayList<>();
     private ArrayList<String> actionList = new ArrayList<>();
-    private ArrayList<Artefact> artefactList = new ArrayList<>();
-    private ArrayList<Furniture> furnitureList = new ArrayList<>();
-    private ArrayList<Location> locationList = new ArrayList<>();
-    private ArrayList<Character> characterList = new ArrayList<>();
-    // only one player per command
+
+    private ArrayList<GameEntity> artefactList = new ArrayList<>();
+    private ArrayList<GameEntity> furnitureList = new ArrayList<>();
+    private ArrayList<GameEntity> locationList = new ArrayList<>();
+    private ArrayList<GameEntity> characterList = new ArrayList<>();
     private Player player;
 
-    public void execute() {
+    private GameAction gameAction;
 
+    /**
+     * @return all the entities in the command except the player
+     */
+    public ArrayList<GameEntity> getCmdEntities() {
+        ArrayList<GameEntity> cmdEntities = new ArrayList<>();
+        cmdEntities.addAll(artefactList);
+        cmdEntities.addAll(furnitureList);
+        cmdEntities.addAll(characterList);
+        cmdEntities.addAll(locationList);
+
+        return cmdEntities;
+    }
+
+    public ArrayList<String> getBuiltInAction() {
+        return builtInAction;
     }
 
     public ArrayList<String> getActionList() {
         return actionList;
     }
 
-    public ArrayList<Artefact> getArtefactList() {
+    public ArrayList<GameEntity> getArtefactList() {
         return artefactList;
     }
 
-    public ArrayList<Furniture> getFurnitureList() {
+    public ArrayList<GameEntity> getFurnitureList() {
         return furnitureList;
     }
 
-    public ArrayList<Location> getLocationList() {
+    public ArrayList<GameEntity> getLocationList() {
         return locationList;
     }
 
-    public ArrayList<Character> getCharacterList() {
+    public ArrayList<GameEntity> getCharacterList() {
         return characterList;
     }
 
@@ -43,7 +59,16 @@ public class Cmd {
         return player;
     }
 
+    public GameAction getGameAction() {
+        return gameAction;
+    }
+
     public void setPlayer(Player player) {
         this.player = player;
     }
+
+    public void setGameAction(GameAction gameAction) {
+        this.gameAction = gameAction;
+    }
+
 }

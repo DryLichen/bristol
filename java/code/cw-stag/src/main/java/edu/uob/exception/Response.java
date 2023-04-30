@@ -10,6 +10,16 @@ public enum Response {
     // tokenizer exceptions
     WRONG_PLAYER_NAME("Format of player name is wrong"),
     LACK_COMMAND("Empty command content"),
+
+    // parser exceptions
+    TOO_MANY_ACTION("Only one action can be in a command"),
+    LACK_ACTION("There must be at least one action in a command"),
+    TOO_MANY_ENTITY("There are too many entities in the command"),
+    LACK_ENTITY("Lack required entities in the command"),
+    ONE_LOCATION("There should be one and only location in this command"),
+
+    // interpreter exceptions
+    UNAVAILABLE_ENTITY("The game entity being required is unavailable"),
     ;
 
 

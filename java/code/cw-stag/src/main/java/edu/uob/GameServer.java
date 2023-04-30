@@ -44,7 +44,7 @@ public final class GameServer {
     public GameServer(File entitiesFile, File actionsFile) {
         // parse two files to store entity and action data
         EntityFileParser entityParser = new EntityFileParser(entitiesFile, entityData);
-        ActionFileParser actionParser = new ActionFileParser(actionsFile, actionData);
+        ActionFileParser actionParser = new ActionFileParser(actionsFile, actionData, entityData);
         try {
             entityParser.parseEntities();
             actionParser.parseActions();
