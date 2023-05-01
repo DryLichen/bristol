@@ -97,6 +97,10 @@ public class EntityData {
         return storeroom;
     }
 
+    public Location getSpawnPoint() {
+        return spawnPoint;
+    }
+
     public HashSet<GameEntity> getArtefactSet() {
         return artefactSet;
     }

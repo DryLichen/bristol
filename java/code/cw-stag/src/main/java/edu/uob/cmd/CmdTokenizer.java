@@ -35,7 +35,16 @@ public class CmdTokenizer {
         cmd.setPlayer((Player) entityData.getPlayerByName(playerName));
 
         // get command tokens
-        ArrayList<String> tokens = getTokens(command.substring(command.indexOf(":") + 1));
+        String[] tokens = getTokens(command.substring(command.indexOf(":") + 1));
+
+        // check if there are extraneous health token
+        int countHealth = 0;
+        for (String token : tokens) {
+            if ("health".equalsIgnoreCase(token)) {
+                countHealth++;
+            }
+        }
+        Assert.isTrue(countHealth <= 1, Response.TOO_MANY_ACTION);
 
         // classify tokens and store tokens into Cmd instance
         outer:
@@ -138,7 +147,7 @@ public class CmdTokenizer {
     /**
      * @return literal tokens by splitting the command
      */
-    private ArrayList<String> getTokens(String command) {
+    private String[] getTokens(String command) {
         // make sure there is only one space at the beginning and end of the command
         command = " " + command.trim() + " ";
 
@@ -157,16 +166,7 @@ public class CmdTokenizer {
             command.replace("@@", "@");
         }
         // split command in terms of @
-        ArrayList<String> tokens = new ArrayList<>(Arrays.asList(command.split("@")));
-
-        // delete all meaningless space items in token list
-        Iterator<String> iterator = tokens.iterator();
-        while (iterator.hasNext()) {
-            String next = iterator.next();
-            if (next.trim().isEmpty()) {
-                iterator.remove();
-            }
-        }
+        String[] tokens = command.split("@");
 
         return tokens;
     }

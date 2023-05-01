@@ -56,13 +56,13 @@ public class CmdParser {
         if ("look".equalsIgnoreCase(builtIn) || "inv".equalsIgnoreCase(builtIn) ||
                 "inventory".equalsIgnoreCase(builtIn) || "health".equalsIgnoreCase(builtIn)) {
             Assert.isTrue(cmd.getArtefactList().size() == 0, Response.TOO_MANY_ENTITY);
-            Assert.isTrue(cmd.getLocationList().size() == 0, Response.ONE_LOCATION);
+            Assert.isTrue(cmd.getLocationList().size() == 0, Response.TOO_MANY_ENTITY);
             return;
         }
 
         if ("drop".equalsIgnoreCase(builtIn) || "get".equalsIgnoreCase(builtIn)) {
             Assert.isTrue(cmd.getArtefactList().size() == 1, Response.LACK_ENTITY);
-            Assert.isTrue(cmd.getLocationList().size() == 0, Response.TOO_MANY_ENTITY);
+            Assert.isTrue(cmd.getLocationList().size() == 0, Response.UNAVAILABLE_ENTITY);
         }
     }
 

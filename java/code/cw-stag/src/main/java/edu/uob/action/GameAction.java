@@ -12,6 +12,9 @@ public class GameAction {
     private HashSet<GameEntity> produceSet = new HashSet<>();
     private String narration;
 
+    private boolean consumeHealth;
+    private boolean produceHealth;
+
     public HashSet<String> getTriggerSet() {
         return triggerSet;
     }
@@ -32,7 +35,23 @@ public class GameAction {
         return narration;
     }
 
+    public boolean isConsumeHealth() {
+        return consumeHealth;
+    }
+
+    public boolean isProduceHealth() {
+        return produceHealth;
+    }
+
     public void setNarration(String narration) {
         this.narration = narration;
+    }
+
+    public void setConsumeHealth(boolean consumeHealth) {
+        this.consumeHealth = consumeHealth;
+    }
+
+    public void setProduceHealth(boolean produceHealth) {
+        this.produceHealth = produceHealth;
     }
 }

@@ -4,6 +4,7 @@ import edu.uob.action.GameAction;
 import edu.uob.database.ActionData;
 import edu.uob.database.EntityData;
 import edu.uob.entity.GameEntity;
+import edu.uob.entity.Player;
 import edu.uob.exception.Response;
 import edu.uob.exception.STAGException;
 import org.w3c.dom.Document;
@@ -50,20 +51,35 @@ public class ActionFileParser {
             // add triggers into gameAction instance
             HashSet<String> triggers = getActionElements(action, "triggers", "keyphrase");
             gameAction.getTriggerSet().addAll(triggers);
+
             // add subjects into gameAction instance
             HashSet<String> subjects = getActionElements(action, "subjects", "entity");
             for (String subject : subjects) {
                 gameAction.getSubjectSet().add(entityData.getEntityByName(subject));
             }
+
             // add consumed entities into gameAction instance
             HashSet<String> consumed = getActionElements(action, "consumed", "entity");
             for (String consume : consumed) {
-                gameAction.getConsumeSet().add(entityData.getEntityByName(consume));
+                // case: consume health
+                if ("health".equalsIgnoreCase(consume)) {
+                    gameAction.setConsumeHealth(true);
+                // general case
+                } else {
+                    gameAction.getConsumeSet().add(entityData.getEntityByName(consume));
+                }
             }
+
             // add produced entities into gameAction instance
             HashSet<String> produced = getActionElements(action, "produced", "entity");
             for (String produce : produced) {
-                gameAction.getProduceSet().add(entityData.getEntityByName(produce));
+                // case: produce health
+                if ("health".equalsIgnoreCase(produce)) {
+                    gameAction.setProduceHealth(true);
+                    // general case
+                } else {
+                    gameAction.getProduceSet().add(entityData.getEntityByName(produce));
+                }
             }
 
             // add narration into gameAction instance

@@ -9,7 +9,6 @@ import edu.uob.exception.Response;
 import edu.uob.exception.STAGException;
 import edu.uob.util.Assert;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 
 public class CmdInterpreter {
@@ -22,9 +21,6 @@ public class CmdInterpreter {
     }
 
     public String interpretCmd(String command) throws STAGException {
-//        StringBuilder result = new StringBuilder();
-        String result = null;
-
         // get cmd and player information
         CmdParser cmdParser = new CmdParser(actionData, entityData);
         Cmd cmd = cmdParser.parseCmd(command);
@@ -32,8 +28,9 @@ public class CmdInterpreter {
         Location playerLocation = entityData.getPlayerLocation(player);
 
         // built-in action case
-        String builtIn = cmd.getBuiltInAction().get(0);
-        if (builtIn != null) {
+        if (cmd.getBuiltInAction().size() != 0) {
+            String builtIn = cmd.getBuiltInAction().get(0);
+
             if ("look".equalsIgnoreCase(builtIn)) {
                 return playerLocation.toString();
             }
@@ -42,7 +39,7 @@ public class CmdInterpreter {
                 // check if the entity is available
                 GameEntity cmdArtefact = cmd.getArtefactList().get(0);
                 Assert.isTrue(playerLocation.getArtefactSet().contains(cmdArtefact), Response.UNAVAILABLE_ENTITY);
-                // delete entity from this place
+                // delete entity from current place
                 playerLocation.getArtefactSet().remove(cmdArtefact);
                 // put entity into player's inventory
                 player.getInventory().add((Artefact) cmdArtefact);
@@ -78,17 +75,48 @@ public class CmdInterpreter {
                 playerLocation.getPlayerSet().remove(player);
                 toLocation.getPlayerSet().add(player);
 
-                return "Move to " + toLocation + " successfully";
+                return "Move to " + toLocation.getName() + " successfully";
             }
 
         }
 
         // other normal corresponding action case
         GameAction gameAction = cmd.getGameAction();
+        // check if subjects are all available
+        HashSet<GameEntity> subjectSet = gameAction.getSubjectSet();
+        for (GameEntity subject : subjectSet) {
+            if (playerLocation.getAllEntities().contains(subject)) {
+                break;
+            }
+            if (playerLocation.getToLocationSet().contains(subject.getName())) {
+                break;
+            }
+            if (player.getInventory().contains(subject)) {
+                break;
+            }
+            throw new STAGException(Response.UNAVAILABLE_ENTITY);
+        }
+
+        // consume health
+        if (gameAction.isConsumeHealth()) {
+            boolean isDead = player.consumeHealth();
+            if (isDead) {
+                // drop all the entities in inventory to current location
+                playerLocation.getArtefactSet().addAll(player.getInventory());
+                player.getInventory().clear();
+                // move player to spawn point
+                playerLocation.getPlayerSet().remove(player);
+                entityData.getSpawnPoint().getPlayerSet().add(player);
+            }
+        }
         // consume game entities
         HashSet<GameEntity> consumeSet = gameAction.getConsumeSet();
         consumeEntity(consumeSet, playerLocation, player);
 
+        // produce health
+        if (gameAction.isProduceHealth()) {
+            player.produceHealth();
+        }
         // produce game entities
         HashSet<GameEntity> produceSet = gameAction.getProduceSet();
         produceEntity(produceSet, playerLocation, player);
