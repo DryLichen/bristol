@@ -43,7 +43,7 @@ public class ActionFileParser {
 
         // parse action nodes and store them into action database
         // only the odd items are actions
-        for (int i = 1; i < actionNodes.getLength(); i+=2) {
+        for (int i = 1; i < actionNodes.getLength(); i += 2) {
             GameAction gameAction = new GameAction();
             Element action = (Element) actionNodes.item(i);
 
@@ -65,6 +65,10 @@ public class ActionFileParser {
             for (String produce : produced) {
                 gameAction.getProduceSet().add(entityData.getEntityByName(produce));
             }
+
+            // add narration into gameAction instance
+            String narration = action.getElementsByTagName("narration").item(0).getTextContent();
+            gameAction.setNarration(narration);
 
             // map triggers to gameAction set
             mapTriggerAction(triggers, gameAction);

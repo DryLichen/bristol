@@ -10,6 +10,7 @@ public class GameAction {
     private HashSet<GameEntity> subjectSet = new HashSet<>();
     private HashSet<GameEntity> consumeSet = new HashSet<>();
     private HashSet<GameEntity> produceSet = new HashSet<>();
+    private String narration;
 
     public HashSet<String> getTriggerSet() {
         return triggerSet;
@@ -25,5 +26,13 @@ public class GameAction {
 
     public HashSet<GameEntity> getProduceSet() {
         return produceSet;
+    }
+
+    public String getNarration() {
+        return narration;
+    }
+
+    public void setNarration(String narration) {
+        this.narration = narration;
     }
 }

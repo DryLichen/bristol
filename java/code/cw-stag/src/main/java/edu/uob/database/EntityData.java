@@ -31,7 +31,7 @@ public class EntityData {
     }
 
     /**
-     * @return gameEntity with the given name
+     * @return gameEntity with the given name, return null if can't found one
      */
     public GameEntity getEntityByName(String name) {
         for (GameEntity entity : getAllEntities()) {
@@ -62,12 +62,26 @@ public class EntityData {
     }
 
     /**
-     * @return location of the given player
+     * @return location of the given player, return null if can't find one
      */
     public Location getPlayerLocation(Player player) {
         for (GameEntity entity : locationSet) {
             Location location = (Location) entity;
             if (location.getPlayerSet().contains(player)) {
+                return location;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @return location of the given entity, return null if can't find one
+     */
+    public Location getEntityLocation(GameEntity gameEntity) {
+        for (GameEntity entity : locationSet) {
+            Location location = (Location) entity;
+            if (location.getAllEntities().contains(gameEntity)) {
                 return location;
             }
         }

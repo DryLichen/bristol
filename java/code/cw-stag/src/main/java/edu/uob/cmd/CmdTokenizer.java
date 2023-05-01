@@ -3,7 +3,6 @@ package edu.uob.cmd;
 import edu.uob.database.ActionData;
 import edu.uob.database.EntityData;
 import edu.uob.entity.*;
-import edu.uob.entity.Character;
 import edu.uob.exception.Response;
 import edu.uob.exception.STAGException;
 import edu.uob.util.Assert;
@@ -24,7 +23,7 @@ public class CmdTokenizer {
     }
 
     /**
-     * @return tokens put in Cmd instance
+     * @return Cmd instance with tokens in it
      */
     public Cmd tokenizeCommand(String command) throws STAGException {
         Cmd cmd = new Cmd();
@@ -152,7 +151,7 @@ public class CmdTokenizer {
 
         // add @ around keywords to separate them with decorative words
         for (String keyword : keywords) {
-            command.replace(" " + keyword.toLowerCase() + " ", " @" + keyword + "@ ");
+            command = command.replace(" " + keyword.toLowerCase() + " ", " @" + keyword + "@ ");
         }
         while (command.contains("@@")) {
             command.replace("@@", "@");

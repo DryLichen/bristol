@@ -1,5 +1,6 @@
 package edu.uob;
 
+import edu.uob.cmd.CmdInterpreter;
 import edu.uob.database.ActionData;
 import edu.uob.database.EntityData;
 import edu.uob.exception.STAGException;
@@ -60,9 +61,16 @@ public final class GameServer {
     * <p>This method handles all incoming game commands and carries out the corresponding actions.
     */
     public String handleCommand(String command) {
+        String result = "";
 
+        try {
+            CmdInterpreter cmdInterpreter = new CmdInterpreter(actionData, entityData);
+            result = cmdInterpreter.interpretCmd(command);
+        } catch (STAGException e) {
+            return e.getMessage();
+        }
 
-        return "";
+        return result;
     }
 
 

@@ -10,4 +10,10 @@ public class Assert {
         }
     }
 
+    public static void notNull(Object object, Response response) throws STAGException {
+        if (object == null) {
+            throw new STAGException(response);
+        }
+    }
+
 }
