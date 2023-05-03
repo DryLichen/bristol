@@ -6,4 +6,5 @@ public class Artefact extends GameEntity {
         super(name, description);
     }
 
+
 }

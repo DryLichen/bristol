@@ -3,6 +3,7 @@ package edu.uob.cmd;
 import edu.uob.database.ActionData;
 import edu.uob.database.EntityData;
 import edu.uob.entity.*;
+import edu.uob.entity.Character;
 import edu.uob.exception.Response;
 import edu.uob.exception.STAGException;
 import edu.uob.util.Assert;
@@ -10,6 +11,9 @@ import edu.uob.util.Assert;
 import java.util.HashSet;
 import java.util.stream.Collectors;
 
+/**
+ * Tokenize command string and save tokens into cmd
+ */
 public class CmdTokenizer {
     private ActionData actionData;
     private EntityData entityData;
@@ -24,76 +28,19 @@ public class CmdTokenizer {
      */
     public Cmd tokenizeCommand(String command) throws STAGException {
         Cmd cmd = new Cmd();
-        // process command to convert letters to lowercase
         command = command.trim().toLowerCase();
 
-        // get command player
-        String playerName = getPlayer(command);
-        cmd.setPlayer((Player) entityData.getPlayerByName(playerName));
+        // get cmd player
+        cmd.setPlayer((Player) entityData.getPlayerByName(getPlayer(command)));
 
         // get command tokens
         String[] tokens = getTokens(command.substring(command.indexOf(":") + 1));
 
-        // check if there are extraneous health token
-        int countHealth = 0;
-        for (String token : tokens) {
-            if ("health".equalsIgnoreCase(token)) {
-                countHealth++;
-            }
-        }
-        Assert.isTrue(countHealth <= 1, Response.TOO_MANY_ACTION);
+        // check if there are extraneous health tokens
+        checkHealthTokens(tokens);
 
-        // classify tokens and store tokens into Cmd instance
-        outer:
-        for (String token : tokens) {
-            // check if the token is built-in action
-            for (String builtIn : actionData.getBuiltInAction()) {
-                if (token.equalsIgnoreCase(builtIn)) {
-                    cmd.getBuiltInAction().add(token);
-                    continue outer;
-                }
-            }
-
-            // normal action
-            for (String trigger : actionData.getActionMap().keySet()) {
-                if (token.equalsIgnoreCase(trigger)) {
-                    cmd.getActionList().add(token);
-                    continue outer;
-                }
-            }
-
-            // check if the token is artefact
-            for (GameEntity gameEntity : entityData.getArtefactSet()) {
-                if (token.equalsIgnoreCase(gameEntity.getName())) {
-                    cmd.getArtefactList().add(gameEntity);
-                    continue outer;
-                }
-            }
-
-            // check if the token is furniture
-            for (GameEntity gameEntity : entityData.getFurnitureSet()) {
-                if (token.equalsIgnoreCase(gameEntity.getName())) {
-                    cmd.getFurnitureList().add(gameEntity);
-                    continue outer;
-                }
-            }
-
-            // check if the token is character
-            for (GameEntity gameEntity : entityData.getCharacterSet()) {
-                if (token.equalsIgnoreCase(gameEntity.getName())) {
-                    cmd.getCharacterList().add(gameEntity);
-                    continue outer;
-                }
-            }
-
-            // check if the token is location
-            for (GameEntity gameEntity : entityData.getLocationSet()) {
-                if (token.equalsIgnoreCase(gameEntity.getName())) {
-                    cmd.getLocationList().add(gameEntity);
-                    continue outer;
-                }
-            }
-        }
+        // classify tokens and store them in cmd
+        storeCmdTokens(cmd, tokens);
 
         return cmd;
     }
@@ -137,10 +84,6 @@ public class CmdTokenizer {
         return true;
     }
 
-    private void setCmdPlayer() {
-
-    }
-
     /**
      * @return literal tokens by splitting the command
      */
@@ -163,4 +106,74 @@ public class CmdTokenizer {
         return tokens;
     }
 
+    /**
+     * check if there are more than 1 "health" tokens
+     */
+    private void checkHealthTokens(String[] tokens) throws STAGException {
+        int countHealth = 0;
+        for (String token : tokens) {
+            if ("health".equalsIgnoreCase(token)) {
+                countHealth++;
+            }
+        }
+        Assert.isTrue(countHealth <= 1, Response.TOO_MANY_ACTION);
+    }
+
+    /**
+     * classify tokens by gameEntities and store them in cmd
+     */
+    private void storeCmdTokens(Cmd cmd, String[] tokens) {
+        for (String token : tokens) {
+            // check if the token is built-in action
+            if (storeBuiltIn(token, cmd)) {
+                continue;
+            }
+            // check if the token is normal action
+            if (storeNormalAction(cmd, token)) {
+                continue;
+            }
+
+            // store gameEntities in cmd
+            GameEntity gameEntity = entityData.getEntityByName(token);
+            if (gameEntity == null) {
+                continue;
+            }
+            if (gameEntity instanceof Artefact) {
+                cmd.getArtefactList().add(gameEntity);
+            } else if (gameEntity instanceof Furniture) {
+                cmd.getFurnitureList().add(gameEntity);
+            } else if (gameEntity instanceof Character) {
+                cmd.getCharacterList().add(gameEntity);
+            } else if (gameEntity instanceof Location) {
+                cmd.getLocationList().add(gameEntity);
+            }
+        }
+    }
+
+    /**
+     * @return true if successfully store the token as built-in action
+     */
+    private boolean storeBuiltIn(String token, Cmd cmd) {
+        for (String builtIn : actionData.getBuiltInAction()) {
+            if (token.equalsIgnoreCase(builtIn)) {
+                cmd.getBuiltInAction().add(builtIn);
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * @return true if successfully store the token as normal action
+     */
+    private boolean storeNormalAction(Cmd cmd, String token) {
+        for (String trigger : actionData.getActionMap().keySet()) {
+            if (token.equalsIgnoreCase(trigger)) {
+                cmd.getActionList().add(trigger);
+                return true;
+            }
+        }
+        return false;
+    }
 }

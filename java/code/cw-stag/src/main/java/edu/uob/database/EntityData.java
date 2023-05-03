@@ -6,7 +6,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * store all the entities data
+ * store all the entities data for the game
  */
 public class EntityData {
     private HashSet<GameEntity> locationSet = new HashSet<>();

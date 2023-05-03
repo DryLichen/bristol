@@ -85,25 +85,25 @@ public class STAGTests {
         sendCommandToServer("simon: get key");
         sendCommandToServer("simon: goto cabin");
         sendCommandToServer("simon: get COIN");
-        sendCommandToServer("sarah: get potion");
-        sendCommandToServer("SARAH: wanna get axe");
-        sendCommandToServer("sarah: open trapdoor");
-        String response = sendCommandToServer("sarah: look").toLowerCase();
+        sendCommandToServer("'sa- rah': get potion");
+        sendCommandToServer("'SA- RAH': wanna get axe");
+        sendCommandToServer("'sa- rah': open trapdoor");
+        String response = sendCommandToServer("'sa- rah': look").toLowerCase();
         assertFalse(response.contains("cellar"), "Can't use other player's items");
 
         // when a player is dead, another player's status shouldn't be modified
         sendCommandToServer("simon: open with key");
         sendCommandToServer("simon: goto cellar");
-        sendCommandToServer("sarah: goto cellar");
+        sendCommandToServer("'sa- rah': goto cellar");
         sendCommandToServer("simon: hit elf");
         sendCommandToServer("simon: hit elf");
         sendCommandToServer("simon: hit elf");
         response = sendCommandToServer("simon: look").toLowerCase();
         assertTrue(response.contains("cabin"), "Fail to remove simon back to spawn point");
-        response = sendCommandToServer("sarah: look").toLowerCase();
+        response = sendCommandToServer("'sa- rah': look").toLowerCase();
         assertTrue(response.contains("cellar"), response+"Other players should stay at the same location");
         assertTrue(response.contains("coin"), "Dead player's items should be left at the leaving location");
-        response = sendCommandToServer("SARAH: INv");
+        response = sendCommandToServer("'SA- RAH': INv");
         assertTrue(response.contains("potion"), "Other player's inventory shouldn't be cleared");
     }
 
@@ -232,6 +232,10 @@ public class STAGTests {
         // lack player
         String response = sendCommandToServer("look").toLowerCase();
         assertFalse(response.contains("cabin"), "Shouldn't see player's location because didn't specify player name");
+
+        // invalid player name
+        response = sendCommandToServer("si!: look").toLowerCase();
+        assertFalse(response.contains("cabin"), "Shouldn't see player's location because player's name is invalid");
 
         // repeated actions
         response = sendCommandToServer("simon: look look").toLowerCase();

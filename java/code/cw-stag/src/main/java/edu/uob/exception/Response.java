@@ -1,5 +1,8 @@
 package edu.uob.exception;
 
+/**
+ * responses used to form exceptions
+ */
 public enum Response {
     // file parsing related exceptions
     FILE_NOT_FOUND("Can't open file because it's nonexistent"),
@@ -17,6 +20,7 @@ public enum Response {
     TOO_MANY_ENTITY("There are too many entities in the command"),
     LACK_ENTITY("Lack required entities in the command"),
     ONE_LOCATION("There should be one and only location in this command"),
+    WRONG_COMMAND("Not a valid input command"),
 
     // interpreter exceptions
     UNAVAILABLE_ENTITY("The game entity being required is unavailable"),

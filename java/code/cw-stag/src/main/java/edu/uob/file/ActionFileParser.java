@@ -40,51 +40,64 @@ public class ActionFileParser {
         NodeList actionNodes = getActionNodes();
 
         // parse each action node and store it into action database
-        // only the odd items are actions
         for (int i = 1; i < actionNodes.getLength(); i += 2) {
             GameAction gameAction = new GameAction();
             Element action = (Element) actionNodes.item(i);
 
-            // add triggers into gameAction instance
+            // store triggers into gameAction instance
             HashSet<String> triggers = getActionElements(action, "triggers", "keyphrase");
             gameAction.getTriggerSet().addAll(triggers);
 
-            // add subjects into gameAction instance
+            // store subjects into gameAction instance
             HashSet<String> subjects = getActionElements(action, "subjects", "entity");
             for (String subject : subjects) {
                 gameAction.getSubjectSet().add(entityData.getEntityByName(subject));
             }
 
-            // add consumed entities into gameAction instance
-            HashSet<String> consumed = getActionElements(action, "consumed", "entity");
-            for (String consume : consumed) {
-                // case: consume health
-                if ("health".equalsIgnoreCase(consume)) {
-                    gameAction.setConsumeHealth(true);
-                // general case
-                } else {
-                    gameAction.getConsumeSet().add(entityData.getEntityByName(consume));
-                }
-            }
+            // store consumed entities into gameAction instance
+            HashSet<String> consumedEntities = getActionElements(action, "consumed", "entity");
+            storeConEntities(consumedEntities, gameAction);
 
-            // add produced entities into gameAction instance
-            HashSet<String> produced = getActionElements(action, "produced", "entity");
-            for (String produce : produced) {
-                // case: produce health
-                if ("health".equalsIgnoreCase(produce)) {
-                    gameAction.setProduceHealth(true);
-                    // general case
-                } else {
-                    gameAction.getProduceSet().add(entityData.getEntityByName(produce));
-                }
-            }
+            // store produced entities into gameAction instance
+            HashSet<String> producedEntities = getActionElements(action, "produced", "entity");
+            storeProEntities(producedEntities, gameAction);
 
-            // add narration into gameAction instance
+            // store narration into gameAction instance
             String narration = action.getElementsByTagName("narration").item(0).getTextContent();
             gameAction.setNarration(narration);
 
             // map triggers to gameAction set
             mapTriggerAction(triggers, gameAction);
+        }
+    }
+
+    /**
+     * store consumed entities into gameAction instance
+     */
+    private void storeConEntities(HashSet<String> consumedEntities, GameAction gameAction) {
+        for (String consumedEntity : consumedEntities) {
+            // case: consume health
+            if ("health".equalsIgnoreCase(consumedEntity)) {
+                gameAction.setConsumeHealth(true);
+                // general case
+            } else {
+                gameAction.getConsumeSet().add(entityData.getEntityByName(consumedEntity));
+            }
+        }
+    }
+
+    /**
+     * store produced entities into gameAction instance
+     */
+    private void storeProEntities(HashSet<String> producedEntities, GameAction gameAction) {
+        for (String producedEntity : producedEntities) {
+            // case: produce health
+            if ("health".equalsIgnoreCase(producedEntity)) {
+                gameAction.setProduceHealth(true);
+                // general case
+            } else {
+                gameAction.getProduceSet().add(entityData.getEntityByName(producedEntity));
+            }
         }
     }
 

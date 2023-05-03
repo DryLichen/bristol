@@ -7,7 +7,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 
 /**
- * store all the actions
+ * store all the actions player can use
  */
 public class ActionData {
     // every trigger is mapped to an action

@@ -11,6 +11,9 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 
+/**
+ * parser for cmd
+ */
 public class CmdParser {
     private ActionData actionData;
     private EntityData entityData;
@@ -20,20 +23,26 @@ public class CmdParser {
         this.entityData = entityData;
     }
 
+    /**
+     * check syntax correctness of cmd
+     * @return parsed cmd
+     * @throws STAGException handled by GameServer
+     */
     public Cmd parseCmd(String command) throws STAGException {
         CmdTokenizer cmdTokenizer = new CmdTokenizer(actionData, entityData);
         Cmd cmd = cmdTokenizer.tokenizeCommand(command);
 
-        // check if the syntax of cmd is valid
+        // check if cmd is valid in syntax
         ArrayList<String> cmdBuiltIn = cmd.getBuiltInAction();
         ArrayList<String> cmdActions = cmd.getActionList();
+
+        // case1: cmd contains built-in action
         Assert.isTrue(cmdBuiltIn.size() <= 1, Response.TOO_MANY_ACTION);
-        // cmd contains built-in action
         if (cmdBuiltIn.size() == 1) {
             parseBuiltIn(cmdActions, cmdBuiltIn, cmd);
         }
 
-        // cmd contains normal actions
+        // case2: cmd contains normal actions
         if (cmdBuiltIn.size() == 0) {
             parseAction(cmdActions, cmd);
         }
@@ -41,32 +50,36 @@ public class CmdParser {
         return cmd;
     }
 
+    /**
+     * check syntax correctness of built-in commands
+     */
     private void parseBuiltIn(ArrayList<String> cmdActions, ArrayList<String> cmdBuiltIn, Cmd cmd) throws STAGException {
         Assert.isTrue(cmdActions.size() == 0, Response.TOO_MANY_ACTION);
         String builtIn = cmdBuiltIn.get(0);
-        // built-in command can't contain furniture and character
-        Assert.isTrue(cmd.getFurnitureList().size() == 0, Response.TOO_MANY_ENTITY);
-        Assert.isTrue(cmd.getCharacterList().size() == 0, Response.TOO_MANY_ENTITY);
 
         if ("goto".equalsIgnoreCase(builtIn)) {
-            Assert.isTrue(cmd.getArtefactList().size() == 0, Response.TOO_MANY_ENTITY);
-            Assert.isTrue(cmd.getLocationList().size() == 1, Response.ONE_LOCATION);
-            return;
-        }
-
-        if ("look".equalsIgnoreCase(builtIn) || "inv".equalsIgnoreCase(builtIn) ||
+            checkEntitiesNum(cmd, 0,0, 0, 1);
+        } else if ("look".equalsIgnoreCase(builtIn) || "inv".equalsIgnoreCase(builtIn) ||
                 "inventory".equalsIgnoreCase(builtIn) || "health".equalsIgnoreCase(builtIn)) {
-            Assert.isTrue(cmd.getArtefactList().size() == 0, Response.TOO_MANY_ENTITY);
-            Assert.isTrue(cmd.getLocationList().size() == 0, Response.TOO_MANY_ENTITY);
-            return;
-        }
-
-        if ("drop".equalsIgnoreCase(builtIn) || "get".equalsIgnoreCase(builtIn)) {
-            Assert.isTrue(cmd.getArtefactList().size() == 1, Response.LACK_ENTITY);
-            Assert.isTrue(cmd.getLocationList().size() == 0, Response.UNAVAILABLE_ENTITY);
+            checkEntitiesNum(cmd, 0, 0, 0, 0);
+        } else if ("drop".equalsIgnoreCase(builtIn) || "get".equalsIgnoreCase(builtIn)) {
+            checkEntitiesNum(cmd, 0, 0, 1, 0);
         }
     }
 
+    /**
+     * check if the number of each type of entities is correct for different actions
+     */
+    private void checkEntitiesNum(Cmd cmd, int furnNum, int charaNum, int arteNum, int locNum) throws STAGException {
+        Assert.isTrue(cmd.getFurnitureList().size() == furnNum, Response.TOO_MANY_ENTITY);
+        Assert.isTrue(cmd.getCharacterList().size() == charaNum, Response.TOO_MANY_ENTITY);
+        Assert.isTrue(cmd.getArtefactList().size() == arteNum, Response.TOO_MANY_ENTITY);
+        Assert.isTrue(cmd.getLocationList().size() == locNum, Response.ONE_LOCATION);
+    }
+
+    /**
+     * check syntax correctness of normal actions
+     */
     private void parseAction(ArrayList<String> cmdActions, Cmd cmd) throws STAGException {
         Assert.isTrue(cmdActions.size() != 0, Response.LACK_ACTION);
         Assert.isTrue(cmd.getCmdEntities().size() != 0, Response.LACK_ENTITY);
@@ -81,7 +94,7 @@ public class CmdParser {
             intersection.retainAll(actionData.getActionMap().get(cmdActions.get(i)));
         }
 
-        // check extraneous entities
+        // no extraneous entities
         // delete action from action set if the action doesn't contain all the cmd entities
         Iterator<GameAction> iterator = intersection.iterator();
         while (iterator.hasNext()) {
@@ -91,8 +104,9 @@ public class CmdParser {
                 iterator.remove();
             }
         }
+
         // not ambiguous: check if there are only one action left
-        Assert.isTrue(intersection.size() == 1, Response.TOO_MANY_ACTION);
+        Assert.isTrue(intersection.size() == 1, Response.WRONG_COMMAND);
 
         // store the one and only mapped gameAction into cmd
         GameAction gameAction = intersection.stream().findFirst().orElse(null);

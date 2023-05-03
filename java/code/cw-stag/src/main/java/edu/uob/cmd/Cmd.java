@@ -5,6 +5,9 @@ import edu.uob.entity.*;
 
 import java.util.ArrayList;
 
+/**
+ * command containing tokens and mapped GameAction
+ */
 public class Cmd {
 
     private ArrayList<String> builtInAction = new ArrayList<>();
@@ -14,6 +17,7 @@ public class Cmd {
     private ArrayList<GameEntity> furnitureList = new ArrayList<>();
     private ArrayList<GameEntity> locationList = new ArrayList<>();
     private ArrayList<GameEntity> characterList = new ArrayList<>();
+
     private Player player;
 
     private GameAction gameAction;
@@ -70,5 +74,4 @@ public class Cmd {
     public void setGameAction(GameAction gameAction) {
         this.gameAction = gameAction;
     }
-
 }

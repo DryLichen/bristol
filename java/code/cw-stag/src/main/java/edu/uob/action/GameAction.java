@@ -4,6 +4,9 @@ import edu.uob.entity.GameEntity;
 
 import java.util.HashSet;
 
+/**
+ * normal actions defined in actions.dot
+ */
 public class GameAction {
 
     private HashSet<String> triggerSet = new HashSet<>();
@@ -12,6 +15,7 @@ public class GameAction {
     private HashSet<GameEntity> produceSet = new HashSet<>();
     private String narration;
 
+    // since health is not GameEntity, here I use bool to store data for health
     private boolean consumeHealth;
     private boolean produceHealth;
 
