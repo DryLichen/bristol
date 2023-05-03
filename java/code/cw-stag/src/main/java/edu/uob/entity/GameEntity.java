@@ -1,5 +1,8 @@
 package edu.uob.entity;
 
+import edu.uob.database.EntityData;
+import edu.uob.exception.STAGException;
+
 /**
  * Store data of entities
  */
@@ -11,6 +14,16 @@ public abstract class GameEntity {
         this.name = name;
         this.description = description;
     }
+
+    /**
+     * consume this gameEntity
+     */
+    public abstract void consume(EntityData entityData, Location playerLocation, Player player) throws STAGException;
+
+    /**
+     * produce this gameEntity
+     */
+    public abstract void produce(EntityData entityData, Location playerLocation, Player player) throws STAGException;
 
     public String getName() {
         return name;

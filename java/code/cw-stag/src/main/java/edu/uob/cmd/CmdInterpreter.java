@@ -4,7 +4,6 @@ import edu.uob.action.GameAction;
 import edu.uob.database.ActionData;
 import edu.uob.database.EntityData;
 import edu.uob.entity.*;
-import edu.uob.entity.Character;
 import edu.uob.exception.Response;
 import edu.uob.exception.STAGException;
 import edu.uob.util.Assert;
@@ -127,19 +126,22 @@ public class CmdInterpreter {
 
         // consume health
         consumeHealth(gameAction, playerLocation, player);
-
         // produce health
         if (gameAction.isProduceHealth()) {
             player.produceHealth();
         }
 
         // consume game entities
-        HashSet<GameEntity> consumeSet = gameAction.getConsumeSet();
-        consumeEntities(consumeSet, playerLocation, player);
+        HashSet<GameEntity> consumeEntitySet = gameAction.getConsumeSet();
+        for (GameEntity consumeEntity : consumeEntitySet) {
+            consumeEntity.consume(entityData, playerLocation, player);
+        }
 
         // produce game entities
         HashSet<GameEntity> produceSet = gameAction.getProduceSet();
-        produceEntities(produceSet, playerLocation, player);
+        for (GameEntity produceEntity : produceSet) {
+            produceEntity.produce(entityData, playerLocation, player);
+        }
 
         return gameAction.getNarration();
     }
@@ -180,106 +182,6 @@ public class CmdInterpreter {
 
                 // stop following actions
                 throw new STAGException(Response.PLAYER_IS_DEAD);
-            }
-        }
-    }
-
-    /**
-     * consume the given gameEntity
-     * if the entity is unavailable (not at the location or inventory), throw exception
-     */
-    private void consumeEntities(HashSet<GameEntity> consumeEntitySet, Location playerLocation, Player player) throws STAGException {
-        for (GameEntity consumeEntity : consumeEntitySet) {
-            // artefact
-            if (consumeEntity instanceof Artefact) {
-                HashSet<GameEntity> artefactSet = playerLocation.getArtefactSet();
-                // delete artefact from location or inventory
-                if (artefactSet.contains(consumeEntity)) {
-                    artefactSet.remove(consumeEntity);
-                } else if (player.getInventory().contains(consumeEntity)) {
-                    player.getInventory().remove(consumeEntity);
-                } else {
-                    throw new STAGException(Response.UNAVAILABLE_ENTITY);
-                }
-                // move artefact to storeroom
-                entityData.getStoreroom().getArtefactSet().add(consumeEntity);
-                continue;
-            }
-
-            // furniture
-            if (consumeEntity instanceof Furniture) {
-                HashSet<GameEntity> furnitureSet = playerLocation.getFurnitureSet();
-                Assert.isTrue(furnitureSet.contains(consumeEntity), Response.UNAVAILABLE_ENTITY);
-                furnitureSet.remove(consumeEntity);
-                entityData.getStoreroom().getFurnitureSet().add(consumeEntity);
-                continue;
-            }
-
-            // character
-            if (consumeEntity instanceof Character) {
-                HashSet<GameEntity> characterSet = playerLocation.getCharacterSet();
-                Assert.isTrue(characterSet.contains(consumeEntity), Response.UNAVAILABLE_ENTITY);
-                characterSet.remove(consumeEntity);
-                entityData.getStoreroom().getCharacterSet().add(consumeEntity);
-                continue;
-            }
-
-            // location
-            if (consumeEntity instanceof Location) {
-                HashSet<String> toLocationSet = playerLocation.getToLocationSet();
-                Assert.isTrue(toLocationSet.contains(consumeEntity.getName()), Response.UNAVAILABLE_ENTITY);
-                toLocationSet.remove(consumeEntity.getName());
-            }
-        }
-    }
-
-
-    /**
-     * produce the given entity
-     * if produced entity is in other player's inventory or unavailable, throw a exception
-     */
-    private void produceEntities(HashSet<GameEntity> produceSet, Location playerLocation, Player player) throws STAGException {
-        for (GameEntity produceEntity : produceSet) {
-            // artefact
-            if (produceEntity instanceof Artefact) {
-                // in player's inventory
-                if (player.getInventory().contains(produceEntity)) {
-                    player.getInventory().remove(produceEntity);
-                // or in some available locations
-                } else {
-                    Location entityLocation = entityData.getEntityLocation(produceEntity);
-                    Assert.notNull(entityLocation, Response.UNAVAILABLE_ENTITY);
-                    // delete entity from previous location
-                    entityLocation.getArtefactSet().remove(produceEntity);
-                    // produce entity at player location
-                    playerLocation.getArtefactSet().add(produceEntity);
-                }
-            }
-
-            // furniture
-            if (produceEntity instanceof Furniture) {
-                Location entityLocation = entityData.getEntityLocation(produceEntity);
-                Assert.notNull(entityLocation, Response.UNAVAILABLE_ENTITY);
-                // delete entity from previous location
-                entityLocation.getFurnitureSet().remove(produceEntity);
-                // produce entity at player location
-                playerLocation.getFurnitureSet().add(produceEntity);
-            }
-
-            // character
-            if (produceEntity instanceof Character) {
-                Location entityLocation = entityData.getEntityLocation(produceEntity);
-                Assert.notNull(entityLocation, Response.UNAVAILABLE_ENTITY);
-                // delete entity from previous location
-                entityLocation.getCharacterSet().remove(produceEntity);
-                // produce entity at player location
-                playerLocation.getCharacterSet().add(produceEntity);
-            }
-
-            // location
-            if (produceEntity instanceof Location) {
-                HashSet<String> toLocationSet = playerLocation.getToLocationSet();
-                toLocationSet.add(produceEntity.getName());
             }
         }
     }

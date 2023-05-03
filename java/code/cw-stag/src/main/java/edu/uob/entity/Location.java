@@ -1,5 +1,10 @@
 package edu.uob.entity;
 
+import edu.uob.database.EntityData;
+import edu.uob.exception.Response;
+import edu.uob.exception.STAGException;
+import edu.uob.util.Assert;
+
 import java.util.HashSet;
 
 public class Location extends GameEntity {
@@ -20,6 +25,19 @@ public class Location extends GameEntity {
         gameEntities.addAll(furnitureSet);
         gameEntities.addAll(characterSet);
         return gameEntities;
+    }
+
+    @Override
+    public void consume(EntityData entityData, Location playerLocation, Player player) throws STAGException {
+        HashSet<String> toLocationSet = playerLocation.getToLocationSet();
+        Assert.isTrue(toLocationSet.contains(this.getName()), Response.UNAVAILABLE_ENTITY);
+        toLocationSet.remove(this.getName());
+    }
+
+    @Override
+    public void produce(EntityData entityData, Location playerLocation, Player player) throws STAGException {
+        HashSet<String> toLocationSet = playerLocation.getToLocationSet();
+        toLocationSet.add(this.getName());
     }
 
     public Location(String name, String description) {
