@@ -7,10 +7,7 @@ import edu.uob.exception.Response;
 import edu.uob.exception.STAGException;
 import edu.uob.util.Assert;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.stream.Collectors;
 
 public class CmdTokenizer {
@@ -148,9 +145,6 @@ public class CmdTokenizer {
      * @return literal tokens by splitting the command
      */
     private String[] getTokens(String command) {
-        // make sure there is only one space at the beginning and end of the command
-        command = " " + command.trim() + " ";
-
         // get all the keywords to be identified in commands
         HashSet<String> keywords = new HashSet<>();
         keywords.addAll(actionData.getActionMap().keySet());
@@ -160,10 +154,8 @@ public class CmdTokenizer {
 
         // add @ around keywords to separate them with decorative words
         for (String keyword : keywords) {
-            command = command.replace(" " + keyword.toLowerCase() + " ", " @" + keyword + "@ ");
-        }
-        while (command.contains("@@")) {
-            command.replace("@@", "@");
+            String keywordLow = keyword.toLowerCase();
+            command = command.replaceAll("(?<=^|[\\p{P}\\s])(" + keywordLow + ")(?=[\\p{P}\\s]|$)", "@$1@");
         }
         // split command in terms of @
         String[] tokens = command.split("@");

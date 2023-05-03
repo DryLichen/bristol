@@ -137,4 +137,75 @@
         <narration>You blow the horn and as if by magic, a lumberjack appears !</narration>
     </action>
 
+    <action>
+        <triggers>
+            <keyphrase>kill</keyphrase>
+        </triggers>
+        <subjects>
+            <entity>elf</entity>
+            <entity>axe</entity>
+        </subjects>
+        <consumed>
+            <entity>elf</entity>
+        </consumed>
+        <produced>
+            <entity>liquid</entity>
+        </produced>
+        <narration>You ues axe to kill the elf crucially and get some strange liquid</narration>
+    </action>
+
+    <action>
+        <triggers>
+            <keyphrase>drink</keyphrase>
+        </triggers>
+        <subjects>
+            <entity>liquid</entity>
+            <entity>coin</entity>
+        </subjects>
+        <consumed>
+            <entity>liquid</entity>
+            <entity>health</entity>
+            <entity>coin</entity>
+        </consumed>
+        <produced>
+        </produced>
+        <narration>You drink the liquid with coin but lose your health</narration>
+    </action>
+
+    <action>
+        <triggers>
+            <keyphrase>drink</keyphrase>
+        </triggers>
+        <subjects>
+            <entity>liquid</entity>
+            <entity>lumberjack</entity>
+        </subjects>
+        <consumed>
+            <entity>liquid</entity>
+            <entity>lumberjack</entity>
+        </consumed>
+        <produced>
+            <entity>tree</entity>
+        </produced>
+        <narration>Lumberjack is dead because the unknown liquid is toxic, but you got tree here? weird</narration>
+    </action>
+
+    <action>
+        <triggers>
+            <keyphrase>lock</keyphrase>
+            <keyphrase>close</keyphrase>
+        </triggers>
+        <subjects>
+            <entity>trapdoor</entity>
+            <entity>axe</entity>
+        </subjects>
+        <consumed>
+            <entity>axe</entity>
+            <entity>cellar</entity>
+        </consumed>
+        <produced>
+        </produced>
+        <narration>You lock trapdoor with the axe</narration>
+    </action>
+
 </actions>

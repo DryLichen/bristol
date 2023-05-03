@@ -9,6 +9,7 @@ import edu.uob.util.Assert;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 
 public class CmdParser {
     private ActionData actionData;
@@ -68,29 +69,33 @@ public class CmdParser {
 
     private void parseAction(ArrayList<String> cmdActions, Cmd cmd) throws STAGException {
         Assert.isTrue(cmdActions.size() != 0, Response.LACK_ACTION);
+        Assert.isTrue(cmd.getCmdEntities().size() != 0, Response.LACK_ENTITY);
 
-        // an action set used to get intersection of every action set
-        HashSet<GameAction> intersection = null;
-        // get gameAction by searching trigger
+        // get all possible actions mapped by triggers
+        HashSet<GameAction> intersection = new HashSet<>();
         for (int i = 0; i < cmdActions.size(); i++) {
             // initial intersection set
             if (i == 0) {
-                intersection = actionData.getActionMap().get(cmdActions.get(0));
+                intersection.addAll(actionData.getActionMap().get(cmdActions.get(0)));
             }
             intersection.retainAll(actionData.getActionMap().get(cmdActions.get(i)));
         }
 
-        // 1. check if there are extraneous action
+        // check extraneous entities
+        // delete action from action set if the action doesn't contain all the cmd entities
+        Iterator<GameAction> iterator = intersection.iterator();
+        while (iterator.hasNext()) {
+            GameAction gameAction = iterator.next();
+            boolean isValid = gameAction.getSubjectSet().containsAll(cmd.getCmdEntities());
+            if (!isValid) {
+                iterator.remove();
+            }
+        }
+        // not ambiguous: check if there are only one action left
         Assert.isTrue(intersection.size() == 1, Response.TOO_MANY_ACTION);
+
+        // store the one and only mapped gameAction into cmd
         GameAction gameAction = intersection.stream().findFirst().orElse(null);
-
-        // 2. there must be at least one entity in the cmd
-        Assert.isTrue(cmd.getCmdEntities().size() != 0, Response.LACK_ENTITY);
-        // 3. check if there are extraneous entities
-        // subjects in gameAction must contain entities in cmd
-        boolean flag = gameAction.getSubjectSet().containsAll(cmd.getCmdEntities());
-        Assert.isTrue(flag, Response.TOO_MANY_ENTITY);
-
         cmd.setGameAction(gameAction);
     }
 

@@ -3,8 +3,6 @@ package edu.uob.file;
 import edu.uob.action.GameAction;
 import edu.uob.database.ActionData;
 import edu.uob.database.EntityData;
-import edu.uob.entity.GameEntity;
-import edu.uob.entity.Player;
 import edu.uob.exception.Response;
 import edu.uob.exception.STAGException;
 import org.w3c.dom.Document;
@@ -19,7 +17,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Set;
 
 /**
  * parse actions file and store data into database
@@ -42,7 +39,7 @@ public class ActionFileParser {
         // get all the action nodes
         NodeList actionNodes = getActionNodes();
 
-        // parse action nodes and store them into action database
+        // parse each action node and store it into action database
         // only the odd items are actions
         for (int i = 1; i < actionNodes.getLength(); i += 2) {
             GameAction gameAction = new GameAction();

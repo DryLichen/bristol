@@ -20,6 +20,7 @@ public enum Response {
 
     // interpreter exceptions
     UNAVAILABLE_ENTITY("The game entity being required is unavailable"),
+    PLAYER_IS_DEAD("you died and lost all of your items, you must return to the start of the game"),
     ;
 
 

@@ -20,6 +20,11 @@ public class CmdInterpreter {
         this.entityData = entityData;
     }
 
+    /**
+     * execute input command
+     * @return result of execution
+     * @throws STAGException exceptions will be handled by GameServer
+     */
     public String interpretCmd(String command) throws STAGException {
         // get cmd and player information
         CmdParser cmdParser = new CmdParser(actionData, entityData);
@@ -82,17 +87,18 @@ public class CmdInterpreter {
 
         // other normal corresponding action case
         GameAction gameAction = cmd.getGameAction();
+
         // check if subjects are all available
         HashSet<GameEntity> subjectSet = gameAction.getSubjectSet();
         for (GameEntity subject : subjectSet) {
             if (playerLocation.getAllEntities().contains(subject)) {
-                break;
+                continue;
             }
             if (playerLocation.getToLocationSet().contains(subject.getName())) {
-                break;
+                continue;
             }
             if (player.getInventory().contains(subject)) {
-                break;
+                continue;
             }
             throw new STAGException(Response.UNAVAILABLE_ENTITY);
         }
@@ -107,8 +113,12 @@ public class CmdInterpreter {
                 // move player to spawn point
                 playerLocation.getPlayerSet().remove(player);
                 entityData.getSpawnPoint().getPlayerSet().add(player);
+
+                // stop following actions
+                throw new STAGException(Response.PLAYER_IS_DEAD);
             }
         }
+
         // consume game entities
         HashSet<GameEntity> consumeSet = gameAction.getConsumeSet();
         consumeEntity(consumeSet, playerLocation, player);
@@ -117,6 +127,7 @@ public class CmdInterpreter {
         if (gameAction.isProduceHealth()) {
             player.produceHealth();
         }
+
         // produce game entities
         HashSet<GameEntity> produceSet = gameAction.getProduceSet();
         produceEntity(produceSet, playerLocation, player);
